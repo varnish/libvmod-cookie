@@ -13,6 +13,11 @@ libvmod_cookie_la_SOURCES = \
 vcc_if.c vcc_if.h: $(VARNISHSRC)/lib/libvmod_std/vmod.py $(top_srcdir)/src/vmod_cookie.vcc
 	@PYTHON@ $(VARNISHSRC)/lib/libvmod_std/vmod.py $(top_srcdir)/src/vmod_cookie.vcc
 
+# crawl first.
+noinst_PROGRAMS = mycookie
+mycookie_SOURCES = vmod_cookie.c
+mycookie_CFLAGS = -DSTANDALONE
+
 VMOD_TESTS = tests/*.vtc
 .PHONY: $(VMOD_TESTS)
 
