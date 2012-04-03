@@ -1,46 +1,61 @@
 ============
-vmod_example
+vmod_cookie
 ============
 
 ----------------------
-Varnish Example Module
+Varnish Cookie Module
 ----------------------
 
-:Author: Martin Blix Grydeland
-:Date: 2011-05-26
+:Author: Lasse Karstensen
+:Date: 2012-04-03
 :Version: 1.0
 :Manual section: 3
 
 SYNOPSIS
 ========
 
-import example;
+import cookie;
 
 DESCRIPTION
 ===========
 
-Example Varnish vmod demonstrating how to write an out-of-tree Varnish vmod.
+Functions to handle the content of the Cookie header without complex use of
+regular expressions.
 
-Implements the traditional Hello World as a vmod.
+Reads the req.http.cookie header, ie it only considers incoming cookies from
+the client. 
+
+Any Set-Cookie header from the backend is currently ignored.
 
 FUNCTIONS
 =========
 
-hello
+Prototyping stage, the current functionality is planned:
+
+cookie.get_string()
+cookie.get_int()
+
+# future
+# cookie.set_int("cookiename", 13);
+# cookie.set_string("cookiename", "c is for..");
+# set req.http.cookie = cookie.extract();
+
+
+get_string
 -----
 
 Prototype
         ::
 
-                hello(STRING S)
+                get_string(STRING S)
 Return value
 	STRING
 Description
-	Returns "Hello, " prepended to S
+	Get string value of cookie S.
 Example
         ::
 
-                set resp.http.hello = example.hello("World");
+                set resp.http.X-sessionid = cookie.set_string("session_id")
 
 INSTALLATION
 ============
