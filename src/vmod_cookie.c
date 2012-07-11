@@ -1,9 +1,19 @@
+/*
+Cookie VMOD for Varnish.
+
+Simplifies handling of the Cookie request header.
+Author: Lasse Karstensen <lasse@varnish-software.com>, July 2012.
+*/
+
 #include <stdlib.h>
+#include <search.h>
 
 #include "vrt.h"
 #include "bin/varnishd/cache.h"
 
 #include "vcc_if.h"
+
+#include "uthash.h"
 
 #ifdef STANDALONE
 #include <stdio.h>
@@ -11,79 +21,36 @@
 #include <assert.h>
 #endif 
 
-enum VAR_TYPE {
-	STRING,
-	INT
-};
+// http://uthash.sourceforge.net/userguide.html
 
 struct cookie {
-	char *name;
-	enum VAR_TYPE type;
-	union {
-		char *name;
-		char *oter;
-	} value;
-    	VTAILQ_ENTRY(cookie) list;
-};
-
-struct cookie_head {
-        unsigned magic;
-#define VMOD_COOKIE_MAGIC 0x1A2E92DE
-        unsigned xid;
-        VTAILQ_HEAD(, cookie) cookies;
+	char name[255];
+	char value[255]
+        UT_hash_handle hh;
 };
 
 
+// global hash
+struct cookie cookies = NULL;
 
 
-int
-init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
-{
-	return (0);
+int add(struct cookie *s) {
+    HASH_ADD(cookies, name, s );
 }
 
-// int init_list(add_cookie(COOKIE_ENTRY* start, char* name, char* value) {
-int add_cookie(COOKIE_ENTRY* start, char* name, char* value) {
-    COOKIE_ENTRY *curr = start;
-    while (curr->next != NULL) curr = curr->next;
-    printf("tip is: %i", curr->value);
-    return(0);
+int del(struct cookie *s) {
+    HASH_DEL(cookies, s );
+    free(s);
 }
 
-int listtest(char* cookieheader) { 
-    COOKIE_ENTRY *start = NULL;
-    COOKIE_ENTRY *tip = NULL;
-    int i = 0;
-
-    start = malloc(sizeof(COOKIE_ENTRY));
-    if (!start) perror("malloc");
-    start->value = 10;
-    start->next = NULL;
-    tip = start;
-
-    for (i=1; i<10; i++) {
-        COOKIE_ENTRY *new;
-        new = malloc(sizeof(COOKIE_ENTRY));
-	if (!new) perror("malloc");
-
-	// configure the new entry
-	new->value = 10 + i;
-	new->next = NULL;
-
-	// hook the new intry into the end of the list.
-	// assert(tip->next == NULL);
-	printf("%d\n", tip->value);
-	tip->next = new;
-	tip = new;
+int vcc_cleanup() {
+    /* Delete all parsed cookies in the data structure. */
+    struct cookie *current, *tmp;
+    HASH_ITER(hh, cookies, current, tmp) {
+        printf("deleting cookie named %s with value %s\n", current->name, current->value);
+        HASH_DEL(cookies,current);
+        free(current);
     }
-    
-    COOKIE_ENTRY *curr = NULL;
-    curr = start;
-    while (curr) {
-	printf("%d\n", curr->value);
-	curr = curr->next;
-    }
-    return(1);
 }
 
 int parse(char *cookieheader) { 
@@ -118,21 +85,26 @@ int parse(char *cookieheader) {
     return(0);
 }
 
+int
+init_function(struct vmod_priv *priv, const struct VCL_conf *conf) {
+    return (0);
+}
+
 const char *
 vmod_parse(struct sess *sp, const char *cookieheader)
 {
-	char *p;
-	unsigned u, v;
-	// TODO: run through cookieheader string, split on ; and 
-	// make an assosiative array out of it.
-	return (p);
+    char *p;
+    unsigned u, v;
+    // TODO: run through cookieheader string, split on ; and 
+    // make an assosiative array out of it.
+    return (p);
 }
 
 const char *
 vmod_get_string(struct sess *sp, const char *cookiename)
 {
-	char *p;
-	unsigned u, v;
+    char *p;
+    unsigned u, v;
 
 /*	u = WS_Reserve(sp->wrk->ws, 0); /* Reserve some work space */
 	//p = sp->wrk->ws->f;		/* Front of workspace area */
@@ -145,18 +117,20 @@ vmod_get_string(struct sess *sp, const char *cookiename)
 	}
 	WS_Release(sp->wrk->ws, v);
 	*/
-	return (p);
+    return (p);
 }
 
 #ifdef STANDALONE
 #include <stdio.h>
 void main(int argc, char* argv[]) {
-    // char* input = "cookie1=foo;cookie2=bar;cookie3=qux;";
-    char input[] = "__utma=21840418.36054577.1327330061.1333353182.1333370469.20; __utmb=21840418.490.10.1333370469; __utmc=21840418; __utmz=21840418.1327330061.1.1.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=foo";
+    char* input = "cookie1=foo;cookie2=bar;cookie3=qux;";
+    // char input[] = "__utma=21840418.36054577.1327330061.1333353182.1333370469.20; __utmb=21840418.490.10.1333370469; __utmc=21840418; __utmz=21840418.1327330061.1.1.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=foo";
     char empty[] = "";
     parse(NULL);
     parse(empty);
     parse(input); //, &output);
+    char *foo = get_string("cookie1");
+    printf("Response is: %s\n", foo);
     printf("Returned input is: %s\n", input);
 //    printf("%s\n", res);
 }
