@@ -1,3 +1,7 @@
 Module example
 Init init_function
+Function VOID parse(STRING)
+Function VOID clean()
+Function VOID add(STRING, STRING)
+Function VOID delete(STRING)
 Function STRING get_string(STRING)
