@@ -24,7 +24,7 @@ varnish v1 -vcl+backend {
 client c1 {
 	txreq -url "/"
 	rxresp
-	expect resp.http.X-foo == "cookie4:cookie4value; cookie3:cookie3value; cookie1:cookie1value"
+	expect resp.http.X-foo == "cookie4=cookie4value; cookie3=cookie3value; cookie1=cookie1value"
 }
 
 client c1 -run
