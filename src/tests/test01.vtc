@@ -8,15 +8,19 @@ server s1 {
 varnish v1 -vcl+backend {
 	import cookie from "${vmod_topbuild}/src/.libs/libvmod_cookie.so";
 
+	sub vcl_recv {
+ 		cookie.parse(req.http.cookie);
+		cookie.delete("cookie1");
+	}
 	sub vcl_deliver {
-		set resp.http.X-hello = cookie.get_string("session-id");
+		set resp.http.X-foo = cookie.get_string();
 	}
 } -start
 
 client c1 {
 	txreq -url "/"
 	rxresp
-	expect resp.http.hello == "Hello, World"
+	expect resp.http.X-foo == ""
 }
 
 client c1 -run
