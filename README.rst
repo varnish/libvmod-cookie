@@ -55,7 +55,7 @@ Description
 Example
         ::
 
-                set resp.http.X-sessionid = cookie.set_string("session_id")
+                set resp.http.X-sessionid = cookie.get_string("session_id")
 
 INSTALLATION
 ============
