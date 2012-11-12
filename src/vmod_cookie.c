@@ -2,6 +2,7 @@
 Cookie VMOD for Varnish.
 
 Simplifies handling of the Cookie request header.
+
 Author: Lasse Karstensen <lasse@varnish-software.com>, July 2012.
 */
 
@@ -19,10 +20,12 @@ Author: Lasse Karstensen <lasse@varnish-software.com>, July 2012.
 #ifdef STANDALONE
 #include <error.h>
 #include <assert.h>
-#endif 
+#endif
 
-#define MAX_COOKIEPART 1024 // name or value maxsize
-#define MAX_COOKIESTRING 8196 // cookie string maxlength
+/* name or value maxsize */
+#define MAX_COOKIEPART 1024
+/* cookie string maxlength */
+#define MAX_COOKIESTRING 8196
 
 struct cookie {
 	char name[MAX_COOKIEPART];
@@ -83,7 +86,7 @@ int hash_cleanup() {
     return(0);
 }
 
-int parse(char *cookieheader) { 
+int parse(char *cookieheader) {
     char tokendata[MAX_COOKIESTRING];
     char *token, *tokstate, *key, *value, *sepindex;
     char *dataptr = tokendata;
@@ -105,8 +108,8 @@ int parse(char *cookieheader) {
         while (token[0] == ' ') token++;
         //printf("token is: %s\n", token);
 
-	sepindex = strchr(token, '='); 
-        if (sepindex == NULL) { 
+	sepindex = strchr(token, '=');
+        if (sepindex == NULL) {
             // could not find delimiter, this cookie is invalid. skip to the next (if any)
             continue; 
         }
@@ -124,10 +127,6 @@ int parse(char *cookieheader) {
         strcpy(new->name, token);
         strcpy(new->value, value);
         hash_set(new);
-
-#if STANDALONE
-//	printf("parsed token; key:%s value:%s\n", key, value);
-#endif
     }
     return(0);
 }
@@ -146,8 +145,8 @@ int get_string(char *cookiestring) {
         // XXX: verify error handling
         curlen += strlen(cookieitem);
         if (curlen >= MAX_COOKIESTRING) {
-            cookiestring = '\0'; // zero out so that we're sure to notice the error ;)
- //           *stringpointer = '\0';
+	    /* Zero out so that we're sure to notice the error ;) */
+            cookiestring = '\0';
             return(0);
         }
         strcat(stringpointer, cookieitem);
@@ -183,7 +182,7 @@ void vmod_clean(struct sess *sp) {
 }
 
 // no WS_Reserve, must fix makefile..
-#ifndef STANDALONE 
+#ifndef STANDALONE
 const char * vmod_get_string(struct sess *sp) {
     char *p;
     unsigned u, v;
@@ -195,7 +194,7 @@ const char * vmod_get_string(struct sess *sp) {
     get_string(cookiestring);
 
     u = WS_Reserve(sp->wrk->ws, 0);
-    p = sp->wrk->ws->f;	
+    p = sp->wrk->ws->f;
 
     v = snprintf(p, u, "%s", cookiestring);
 //    v = sprintf(p, cookiestring);
@@ -235,11 +234,11 @@ void test_simple() {
     hash_set(&cookie1);
     hash_set(&cookie2);
 
-    char *foo = malloc(MAX_COOKIESTRING); 
+    char *foo = malloc(MAX_COOKIESTRING);
     memset(foo, '\0', sizeof(&foo)); get_string(foo); printf("%s\n", foo);
 
     s = hash_get_by_name("cookie1");
-    if (s == NULL) { printf("BAD: Cookie not found\n"); } 
+    if (s == NULL) { printf("BAD: Cookie not found\n"); }
     else { printf("OK: Found cookie %s with value %s\n", s->name, s->value); }
     s = NULL;
 
@@ -253,7 +252,7 @@ void test_simple() {
     memset(foo, '\0', sizeof(&foo)); get_string(foo); printf("%s\n", foo);
 
     s = hash_get_by_name("cookie1");
-    if (s == NULL) { printf("OK: Cookie not found as expected\n"); } 
+    if (s == NULL) { printf("OK: Cookie not found as expected\n"); }
     else { printf("BAD: Found cookie %s with value %s\n", s->name, s->value); }
 }
 
@@ -263,4 +262,4 @@ int main(int argc, char* argv[]) {
     return(0);
 }
 
-#endif 
+#endif
