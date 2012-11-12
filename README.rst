@@ -23,7 +23,7 @@ Functions to handle the content of the Cookie header without complex use of
 regular expressions.
 
 Reads the req.http.cookie header, ie it only considers incoming cookies from
-the client. 
+the client.
 
 Any Set-Cookie header from the backend is currently ignored.
 
@@ -55,7 +55,7 @@ Description
 Example
         ::
 
-                set resp.http.X-sessionid = cookie.set_string("session_id")
+                set resp.http.X-sessionid = cookie.get_string("session_id")
 
 INSTALLATION
 ============
@@ -88,7 +88,7 @@ Make targets:
 * make check - runs the unit tests in ``src/tests/*.vtc``
 
 In your VCL you could then use this vmod along the following lines::
-        
+
         import example;
 
         sub vcl_deliver {
