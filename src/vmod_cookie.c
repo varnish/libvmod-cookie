@@ -236,21 +236,21 @@ void test_simple() {
     hash_set(&cookie2);
 
     char *foo = malloc(MAX_COOKIESTRING); 
-    memset(foo, '\0', sizeof(foo)); get_string(foo); printf("%s\n", foo);
+    memset(foo, '\0', sizeof(&foo)); get_string(foo); printf("%s\n", foo);
 
     s = hash_get_by_name("cookie1");
     if (s == NULL) { printf("BAD: Cookie not found\n"); } 
     else { printf("OK: Found cookie %s with value %s\n", s->name, s->value); }
     s = NULL;
 
-    memset(foo, '\0', sizeof(foo)); get_string(foo); printf("%s\n", foo);
+    memset(foo, '\0', sizeof(&foo)); get_string(foo); printf("%s\n", foo);
 
     hash_del_by_name("does-not-exist");
 
-    memset(foo, '\0', sizeof(foo)); get_string(foo); printf("%s\n", foo);
+    memset(foo, '\0', sizeof(&foo)); get_string(foo); printf("%s\n", foo);
 
     hash_del_by_name("cookie1");
-    memset(foo, '\0', sizeof(foo)); get_string(foo); printf("%s\n", foo);
+    memset(foo, '\0', sizeof(&foo)); get_string(foo); printf("%s\n", foo);
 
     s = hash_get_by_name("cookie1");
     if (s == NULL) { printf("OK: Cookie not found as expected\n"); } 
