@@ -1,7 +1,5 @@
 INCLUDES = -I$(VARNISHSRC)/include -I$(VARNISHSRC)
 
-CC=clang
-
 vmoddir = $(VMODDIR)
 vmod_LTLIBRARIES = libvmod_cookie.la
 
