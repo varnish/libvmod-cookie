@@ -89,6 +89,26 @@ Example
 			std.log("cookie1 value is: " + cookie.get("cookie1"));
 		}
 
+set
+----
+
+Prototype
+        ::
+
+                set(STRING cookiename, STRING cookievalue)
+Return value
+	VOID
+Description
+	Set the internal vmod storage value for a cookie to a value.
+
+Example
+        ::
+
+		sub vcl_recv {
+			cookie.set("cookie1", "value1");
+			std.log("cookie1 value is: " + cookie.get("cookie1"));
+		}
+
 
 delete
 ------
