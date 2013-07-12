@@ -7,7 +7,7 @@ Varnish Cookie Module
 ----------------------
 
 :Author: Lasse Karstensen
-:Date: 2012-04-03
+:Date: 2013-07-12
 :Version: 1.0
 :Manual section: 3
 
@@ -22,23 +22,92 @@ DESCRIPTION
 Functions to handle the content of the Cookie header without complex use of
 regular expressions.
 
-Reads the req.http.cookie header, ie it only considers incoming cookies from
-the client.
-
-Any Set-Cookie header from the backend is currently ignored.
+Parses a cookie header into an internal data store, where per-cookie
+get/set/delete functions are available. A filter_except() method removes all
+but a set comma-separated list of cookies.
 
 FUNCTIONS
 =========
 
-Prototyping stage, the current functionality is planned:
+parse
+-----
 
-cookie.get_string()
-cookie.get_int()
+Prototype
+        ::
 
-# future
-# cookie.set_int("cookiename", 13);
-# cookie.set_string("cookiename", "c is for..");
-# set req.http.cookie = cookie.extract();
+                parse(STRING S)
+Return value
+	VOID
+Description
+	Parse the cookie string in string S. Implicit clean() if run twice
+	during one request.
+Example
+        ::
+		sub vcl_recv {
+			cookie.parse(req.http.Cookie);
+		}
+
+clean
+-----
+
+Prototype
+        ::
+
+                clean()
+Return value
+	VOID
+Description
+	Clean up all previously parse()-d cookies. Probably of limited
+	use. It is not necessary to run clean() in normal operation.
+Example
+        ::
+		sub vcl_recv {
+			cookie.clean();
+		}
+
+delete
+-----
+
+Prototype
+        ::
+
+                delete(STRING cookiename)
+Return value
+	VOID
+Description
+	Delete a cookie from internal vmod storage if it exists.
+
+Example
+        ::
+		sub vcl_recv {
+			cookie.parse("cookie1: value1; cookie2: value2;");
+			cookie.delete("cookie2");
+			// get_string() will now yield "cookie1: value1";
+		}
+
+
+filter_except
+-------------
+
+Prototype
+        ::
+
+                filter_except(STRING cookienames)
+Return value
+	VOID
+Description
+	Delete all cookies from internal vmod storage that is not in the
+	comma-separated argument cookienames.
+
+Example
+        ::
+		sub vcl_recv {
+			cookie.parse("cookie1: value1; cookie2: value2; cookie3: value3");
+			cookie.filter_except("cookie1,cookie2");
+			// get_string() will now yield
+			// "cookie1: value1; cookie2: value2;";
+		}
+
 
 
 get_string
@@ -47,23 +116,22 @@ get_string
 Prototype
         ::
 
-                get_string(STRING S)
+                get_string()
 Return value
 	STRING
 Description
-	Get string value of cookie S.
+	Get a Cookie string value with all cookies in internal vmod storage.
 Example
         ::
 
-                set resp.http.X-sessionid = cookie.get_string("session_id")
+		sub vcl_recv {
+			cookie.parse(req.http.cookie);
+			cookie.filter_except("SESSIONID,PHPSESSID");
+			set req.http.cookie = cookie.get_string();
+		}
 
 INSTALLATION
 ============
-
-This is an example skeleton for developing out-of-tree Varnish
-vmods. It implements the "Hello, World!" as a vmod callback. Not
-particularly useful in good hello world tradition, but demonstrates how
-to get the glue around a vmod working.
 
 The source tree is based on autotools to configure the building, and
 does also have the necessary bits in place to do functional unit tests
@@ -84,17 +152,18 @@ Varnish installation).
 Make targets:
 
 * make - builds the vmod
-* make install - installs your vmod in `VMODDIR`
+* make install - installs the vmod in `VMODDIR`
 * make check - runs the unit tests in ``src/tests/*.vtc``
 
 In your VCL you could then use this vmod along the following lines::
 
-        import example;
+	import cookie;
+	sub vcl_recv {
+		cookie.parse(req.http.cookie);
+		cookie.filter_except("SESSIONID,PHPSESSID");
+		set req.http.cookie = cookie.get_string();
+	}
 
-        sub vcl_deliver {
-                # This sets resp.http.hello to "Hello, World"
-                set resp.http.hello = example.hello("World");
-        }
 
 HISTORY
 =======
@@ -108,4 +177,4 @@ COPYRIGHT
 This document is licensed under the same license as the
 libvmod-example project. See LICENSE for details.
 
-* Copyright (c) 2011 Varnish Software
+* Copyright (c) 2011-2013 Varnish Software

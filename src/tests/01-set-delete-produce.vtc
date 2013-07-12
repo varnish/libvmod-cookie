@@ -11,8 +11,8 @@ varnish v1 -vcl+backend {
 	sub vcl_recv {
 		cookie.set("cookie1", "cookie1BAD");
 		cookie.set("cookie2", "cookie2value");
-		cookie.set("cookie4", "cookie4value");
 		cookie.set("cookie3", "cookie3value");
+		cookie.set("cookie4", "cookie4value");
 		cookie.set("cookie1", "cookie1value");
 		cookie.delete("cookie2");
 	}
@@ -24,7 +24,7 @@ varnish v1 -vcl+backend {
 client c1 {
 	txreq -url "/"
 	rxresp
-	expect resp.http.X-foo == "cookie4=cookie4value; cookie3=cookie3value; cookie1=cookie1value"
+	expect resp.http.X-foo == "cookie1=cookie1value; cookie3=cookie3value; cookie4=cookie4value;"
 }
 
 client c1 -run

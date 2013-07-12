@@ -3,5 +3,7 @@ Init init_function
 Function VOID parse(STRING)
 Function VOID clean()
 Function VOID set(STRING, STRING)
+Function STRING get(STRING)
 Function VOID delete(STRING)
+Function VOID filter_except(STRING)
 Function STRING get_string()
