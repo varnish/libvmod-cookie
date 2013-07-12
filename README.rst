@@ -65,6 +65,27 @@ Example
 			cookie.clean();
 		}
 
+get
+-----
+
+Prototype
+        ::
+
+                get(STRING cookiename)
+Return value
+	STRING
+Description
+	Get the value of a cookie, as stored in internal vmod storage.
+
+Example
+        ::
+		import std;
+		sub vcl_recv {
+			cookie.parse("cookie1: value1; cookie2: value2;");
+			std.log("cookie1 value is: " + cookie.get("cookie1"));
+		}
+
+
 delete
 -----
 
