@@ -43,9 +43,11 @@ Description
 	during one request.
 Example
         ::
+
 		sub vcl_recv {
 			cookie.parse(req.http.Cookie);
 		}
+
 
 clean
 -----
@@ -61,6 +63,7 @@ Description
 	use. It is not necessary to run clean() in normal operation.
 Example
         ::
+
 		sub vcl_recv {
 			cookie.clean();
 		}
@@ -79,6 +82,7 @@ Description
 
 Example
         ::
+
 		import std;
 		sub vcl_recv {
 			cookie.parse("cookie1: value1; cookie2: value2;");
@@ -87,7 +91,7 @@ Example
 
 
 delete
------
+------
 
 Prototype
         ::
@@ -100,6 +104,7 @@ Description
 
 Example
         ::
+
 		sub vcl_recv {
 			cookie.parse("cookie1: value1; cookie2: value2;");
 			cookie.delete("cookie2");
@@ -122,6 +127,7 @@ Description
 
 Example
         ::
+
 		sub vcl_recv {
 			cookie.parse("cookie1: value1; cookie2: value2; cookie3: value3");
 			cookie.filter_except("cookie1,cookie2");
@@ -132,7 +138,7 @@ Example
 
 
 get_string
------
+----------
 
 Prototype
         ::
