@@ -14,6 +14,8 @@ varnish v1 -vcl+backend {
 	}
 	sub vcl_deliver {
 		set resp.http.X-foo = cookie.get("cookie2");
+		# Make sure we handle this gracefully.
+		set resp.http.X-bar = cookie.get("non-existing");
 	}
 } -start
 
@@ -21,6 +23,7 @@ client c1 {
 	txreq -url "/"
 	rxresp
 	expect resp.http.X-foo == "cookie2value"
+	expect resp.http.X-bar == ""
 }
 
 client c1 -run
