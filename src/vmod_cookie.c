@@ -220,3 +220,9 @@ const char * vmod_get_string(struct sess *sp) {
 	return (p);
 }
 
+
+const char *
+vmod_format_rfc1123(struct sess *sp, double ts, double duration) {
+        return VRT_time_string(sp, ts + duration);
+}
+

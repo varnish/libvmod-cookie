@@ -26,6 +26,11 @@ Parses a cookie header into an internal data store, where per-cookie
 get/set/delete functions are available. A filter_except() method removes all
 but a set comma-separated list of cookies.
 
+A convenience function for formatting the Set-Cookie Expires date field
+is also included. It might be needed to use libvmod-header if there might
+be multiple Set-Cookie response headers.
+
+
 FUNCTIONS
 =========
 
@@ -176,6 +181,31 @@ Example
 			cookie.filter_except("SESSIONID,PHPSESSID");
 			set req.http.cookie = cookie.get_string();
 		}
+
+format_rfc1123
+--------------
+
+Prototype
+        ::
+
+                format_rfc1123(TIME, DURATION)
+Return value
+	STRING
+Description
+	Get a RFC1123 formatted date string suitable for inclusion in a
+	Set-Cookie response header.
+
+	Care should be taken if the response has multiple Set-Cookie headers.
+	In that case the header vmod should be used.
+
+Example
+        ::
+
+		sub vcl_deliver {
+			# Set a userid cookie on the client that lives for 5 minutes.
+			set resp.http.Set-Cookie = "userid=" + req.http.userid + "; Expires=" + cookie.format_rfc1123(now, 5m) + "; httpOnly";
+		}
+
 
 INSTALLATION
 ============
