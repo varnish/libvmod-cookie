@@ -78,7 +78,7 @@ Prototype
 Return value
 	STRING
 Description
-	Get the value of a cookie, as stored in internal vmod storage.
+	Get the value of a cookie, as stored in internal vmod storage. If the cookie name does not exists, an empty string is returned.
 
 Example
         ::

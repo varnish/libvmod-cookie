@@ -10,6 +10,9 @@ server s1 {
        rxreq
        txresp
 
+       rxreq
+       txresp
+
 } -start
 
 varnish v1 -vcl+backend {
@@ -40,6 +43,13 @@ client c2 {
 
 client c3 {
 	txreq -hdr "Cookie: "
+	rxresp
+	expect resp.http.X-foo == ""
+} -run
+
+# An empty cookie is a non-existing cookie for us.
+client c4 {
+	txreq -hdr "Cookie: emptycookie="
 	rxresp
 	expect resp.http.X-foo == ""
 } -run
