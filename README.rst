@@ -30,6 +30,11 @@ A convenience function for formatting the Set-Cookie Expires date field
 is also included. It might be needed to use libvmod-header if there might
 be multiple Set-Cookie response headers.
 
+This vmod allocates memory on the session workspace. It needs twice
+the memory requirement of your cookie string, usually less than 2KB.
+If you have many long cookies, or use other vmods that use the same memory
+segment, you might need to increase the sess_workspace parameter.
+
 
 FUNCTIONS
 =========
