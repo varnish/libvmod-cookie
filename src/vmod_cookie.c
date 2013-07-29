@@ -46,13 +46,9 @@ void vmod_parse(struct sess *sp, const char *cookieheader) {
 		VTAILQ_REMOVE(&cookielist, newcookie, list);
 	}
 
-	VSL(SLT_Debug, 0, "cookie-vmod: running parse()");
-
 	if (cookieheader == NULL || strlen(cookieheader) == 0
 			|| strlen(cookieheader) >= MAX_COOKIESTRING)
 		return;
-
-	VSL(SLT_Debug, 0, "parsing ..");
 
 	/* strtok modifies source, fewer surprises.*/
 	strcpy(tokendata, cookieheader);
@@ -93,9 +89,6 @@ void vmod_set(struct sess *sp, const char *name, const char *value) {
 
 	VTAILQ_FOREACH(cookie, &cookielist, list) {
 		if (strcmp(cookie->name, name) == 0) {
-			VSL(SLT_Debug, 0,
-					"Replacing cookie \"%s\" from \"%s\" to \"%s\".\n",
-					name, cookie->value, value);
 			strcpy(cookie->value, value);
 			return;
 		}
@@ -125,7 +118,6 @@ void vmod_delete(struct sess *sp, const char *name) {
 	struct cookie *cookie, *tmp;
 	VTAILQ_FOREACH_SAFE(cookie, &cookielist, list, tmp) {
 		if (strcmp(cookie->name, name) == 0) {
-			VSL(SLT_Debug, 0, "cookie-vmod: Deleting cookie %s", name);
 			VTAILQ_REMOVE(&cookielist, cookie, list);
 			break;
 		}
@@ -135,10 +127,8 @@ void vmod_delete(struct sess *sp, const char *name) {
 void vmod_clean(struct sess *sp) {
 	struct cookie *cookie;
 
-	VSL(SLT_Debug, 0, "cookie-vmod: cleanup");
 	while (!VTAILQ_EMPTY(&cookielist)) {
 		cookie = VTAILQ_FIRST(&cookielist);
-		VSL(SLT_Debug, 0, "cookie-vmod: removing %s", cookie->name);
 		VTAILQ_REMOVE(&cookielist, cookie, list);
 	}
 }
@@ -165,12 +155,8 @@ void vmod_filter_except(struct sess *sp, const char *whitelist) {
 
 	// filter existing cookies that isn't in the whitelist.
 	VTAILQ_FOREACH_SAFE(cookie, &cookielist, list, tmp) {
-		VSL(SLT_Debug, 0, "cookie-vmod: iter %s %i", cookie->name, cookie);
-		VSL(SLT_Debug, 0, "cookie-vmod: tmp is : %i", tmp);
 		found = 0;
-
 		for (i=0; i<num_cookies; i++) {
-			//VSL(SLT_Debug, 0, "cookie-vmod: white %s", cookienames[i]);
 			if (strlen(cookie->name) == strlen(cookienames[i]) &&
 					strcmp(cookienames[i], cookie->name) == 0) {
 				found = 1;
@@ -179,13 +165,9 @@ void vmod_filter_except(struct sess *sp, const char *whitelist) {
 		}
 
 		if (!found) {
-			VSL(SLT_Debug, 0, "cookie-vmod: deleting non-whitelisted cookie %s",
-					cookie->name);
 			VTAILQ_REMOVE(&cookielist, cookie, list);
-			VSL(SLT_Debug, 0, "cookie-vmod: deleting ref: %i", cookie);
 		}
 	} // foreach
-	VSL(SLT_Debug, 0, "cookie-vmod: done filtering");
 }
 
 
@@ -195,7 +177,6 @@ const char * vmod_get_string(struct sess *sp) {
 	unsigned v, u;
 	char *p;
 
-	VSL(SLT_Debug, 0, "cookie-vmod: returning new cookie string");
 	u = WS_Reserve(sp->wrk->ws, 0);
 	p = sp->wrk->ws->f;
 
@@ -203,14 +184,13 @@ const char * vmod_get_string(struct sess *sp) {
 	AN(output);
 
 	VTAILQ_FOREACH(curr, &cookielist, list) {
-		VSL(SLT_Debug, 0, "hoi! %s", curr->name);
 		VSB_printf(output, "%s=%s; ", curr->name, curr->value);
 	}
 	VSB_trim(output);
 	VSB_finish(output);
 	v = VSB_len(output);
 	strcpy(p, VSB_data(output));
-	VSL(SLT_Debug, 0, "jeje: %s", p);
+
 	VSB_delete(output);
 
 	v++;
