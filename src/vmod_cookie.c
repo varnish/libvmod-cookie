@@ -37,6 +37,8 @@ void vmod_parse(struct sess *sp, const char *cookieheader) {
 
 	struct cookie *newcookie;
 
+	int i = 0;
+
 	// If called twice during the same request, clean out old state
 	// before proceeding.
 	while (!VTAILQ_EMPTY(&cookielist)) {
@@ -74,8 +76,9 @@ void vmod_parse(struct sess *sp, const char *cookieheader) {
 		*sepindex = '\0';
 
 		vmod_set(sp, token, value);
+		i++;
 	}
-	VSL(SLT_Debug, 0, "cookie-vmod: done parsing.");
+	VSL(SLT_VCL_Log, 0, "libvmod-cookie: parsed %i cookies.");
 }
 
 
