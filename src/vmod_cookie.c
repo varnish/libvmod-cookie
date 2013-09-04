@@ -23,7 +23,6 @@ struct cookie {
 	char value[MAX_COOKIEPART];
 	VTAILQ_ENTRY(cookie) list;
 };
-
 VTAILQ_HEAD(, cookie) cookielist = VTAILQ_HEAD_INITIALIZER(cookielist);
 
 int init_function(struct vmod_priv *priv, const struct VCL_conf *conf) {
@@ -50,7 +49,7 @@ void vmod_parse(struct sess *sp, const char *cookieheader) {
 			|| strlen(cookieheader) >= MAX_COOKIESTRING)
 		return;
 
-	/* strtok modifies source, fewer surprises.*/
+	/* strtok modifies source, fewer surprises. */
 	strcpy(tokendata, cookieheader);
 	dataptr = tokendata;
 
