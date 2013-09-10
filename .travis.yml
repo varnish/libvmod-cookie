@@ -1,0 +1,25 @@
+language: c
+
+before_install:
+ - sudo apt-get install -qq python-docutils
+
+before_script:
+  - apt-get source -q varnish
+  - pwd
+  - cd varnish*
+  - pwd
+  - ./configure
+  - make
+  - cd ..
+  - ./autogen.sh
+  - ./configure VARNISHSRC=varnish* VMODDIR=`pwd`
+  - find
+  - make
+
+script:
+  - make check
+
+compiler:
+  - clang
+  - gcc
+
