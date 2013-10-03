@@ -73,7 +73,7 @@ void vmod_parse(struct sess *sp, const char *cookieheader) {
 		vmod_set(sp, token, value);
 		i++;
 	}
-	VSL(SLT_VCL_Log, 0, "libvmod-cookie: parsed %i cookies.");
+	VSL(SLT_VCL_Log, 0, "libvmod-cookie: parsed %i cookies.", i);
 }
 
 
