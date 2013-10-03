@@ -50,7 +50,7 @@ void vmod_parse(struct sess *sp, const char *cookieheader) {
 		return;
 
 	/* strtok modifies source, fewer surprises. */
-	strcpy(tokendata, cookieheader);
+	strncpy(tokendata, cookieheader, sizeof(tokendata));
 	dataptr = tokendata;
 
 	while (1) {
