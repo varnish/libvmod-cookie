@@ -1,0 +1,48 @@
+varnishtest "Test cookie vmod concurrency"
+
+server s1 {
+       sema r1 sync 2
+       rxreq
+       expect req.url == "/s1"
+       txresp
+} -start
+
+server s2 {
+       rxreq
+       expect req.url == "/s2"
+       txresp
+} -start
+
+varnish v1 -vcl+backend {
+	import cookie from "${vmod_topbuild}/src/.libs/libvmod_cookie.so";
+
+	sub vcl_recv {
+		cookie.parse(req.http.cookie);
+
+		if (req.url == "/s1") {
+			set req.backend = s1;
+		}
+		else {
+			set req.backend = s2;
+		}
+
+	}
+	sub vcl_deliver {
+		set resp.http.x-val = cookie.get("a");
+	}
+} -start
+
+client c1 {
+	txreq -url "/s1" -hdr "Cookie: a=bar"
+	rxresp
+	expect resp.http.x-val == "bar"
+} -start
+
+client c2 {
+       sema r1 sync 2
+       txreq -url "/s2" -hdr "Cookie: a=foo"
+       rxresp
+       expect resp.http.x-val == "foo"
+} -run
+
+
