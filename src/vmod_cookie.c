@@ -32,9 +32,14 @@ struct vmod_cookie {
 };
 
 static pthread_key_t key;
+static pthread_once_t key_is_initialized = PTHREAD_ONCE_INIT;
+
+static void mkkey(void) {	
+	AZ(pthread_key_create(&key, free));
+}
 
 int init_function(struct vmod_priv *priv, const struct VCL_conf *conf) {
-	AZ(pthread_key_create(&key, free));
+	pthread_once(&key_is_initialized, mkkey);
 	return (0);
 }
 
