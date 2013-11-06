@@ -35,6 +35,11 @@ the memory requirement of your cookie string, usually less than 2KB.
 If you have many long cookies, or use other vmods that use the same memory
 segment, you might need to increase the sess_workspace parameter.
 
+Only within a single VMOD call is the state set by cookie.parse() /
+cookie.set() guaranteed to persist. This VMOD was designed to be used
+for cleaning up a request in vcl_recv, but works outside recv if needed.
+In such a case it is necessary to run cookie.parse() again.
+
 
 FUNCTIONS
 =========
@@ -49,8 +54,8 @@ Prototype
 Return value
 	VOID
 Description
-	Parse the cookie string in string S. Implicit clean() if run twice
-	during one request.
+	Parse the cookie string in string S. The parsed values are only guaranteed
+to exist within a single VCL function. Implicit clean() if run more than once.
 Example
         ::
 
