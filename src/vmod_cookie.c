@@ -34,7 +34,7 @@ struct vmod_cookie {
 static pthread_key_t key;
 static pthread_once_t key_is_initialized = PTHREAD_ONCE_INIT;
 
-static void mkkey(void) {	
+static void mkkey(void) {
 	AZ(pthread_key_create(&key, free));
 }
 
