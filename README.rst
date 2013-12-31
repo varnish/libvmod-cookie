@@ -55,7 +55,7 @@ Return value
 	VOID
 Description
 	Parse the cookie string in string S. The parsed values are only guaranteed
-to exist within a single VCL function. Implicit clean() if run more than once.
+	to exist within a single VCL function. Implicit clean() if run more than once.
 Example
         ::
 
