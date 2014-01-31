@@ -19,8 +19,8 @@ Author: Lasse Karstensen <lasse@varnish-software.com>, July 2012.
 #define MAXCOOKIES 100
 
 struct cookie {
-	char name[MAX_COOKIEPART];
-	char value[MAX_COOKIEPART];
+	char *name;
+	char *value;
 	VTAILQ_ENTRY(cookie) list;
 };
 
@@ -139,11 +139,9 @@ void vmod_set(struct sess *sp, const char *name, const char *value) {
 		}
 	}
 
-	newcookie = (struct cookie*)WS_Alloc(sp->ws, sizeof(struct cookie));
-	AN(newcookie);
-
-	strcpy(newcookie->name, name);
-	strcpy(newcookie->value, value);
+	newcookie = (struct cookie *) WS_Alloc(sp->ws, sizeof(struct cookie));
+	newcookie->name = WS_Dup(sp->ws, name);
+	newcookie->value = WS_Dup(sp->ws, value);
 
 	VTAILQ_INSERT_TAIL(&vcp->cookielist, newcookie, list);
 }
