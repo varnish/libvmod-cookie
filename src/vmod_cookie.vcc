@@ -1,11 +1,11 @@
-Module cookie
-Init init_function
-Function VOID parse(STRING)
-Function VOID clean()
-Function VOID set(STRING, STRING)
-Function STRING get(STRING)
-Function VOID delete(STRING)
-Function VOID filter_except(STRING)
-Function STRING get_string()
+$Module cookie Varnish Cookie Module
+$Init init_function
+$Function VOID parse(STRING)
+$Function VOID clean()
+$Function VOID set(STRING, STRING)
+$Function STRING get(STRING)
+$Function VOID delete(STRING)
+$Function VOID filter_except(STRING)
+$Function STRING get_string()
 #
-Function STRING format_rfc1123(TIME, DURATION)
+$Function STRING format_rfc1123(TIME, DURATION)
