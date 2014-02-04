@@ -140,7 +140,7 @@ vmod_set(struct sess *sp, const char *name, const char *value) {
 
 	VTAILQ_FOREACH(cookie, &vcp->cookielist, list) {
 		if (strcmp(cookie->name, name) == 0) {
-			strcpy(cookie->value, value);
+			cookie->value = WS_Dup(sp->ws, value);
 			return;
 		}
 	}
