@@ -1,4 +1,4 @@
-Summary: Example VMOD for Varnish
+Summary: Cookie VMOD for Varnish %{VARNISHVER}
 Name: vmod-cookie
 Version: 0.1
 Release: 1%{?dist}
@@ -10,7 +10,7 @@ Requires: varnish > 3.0
 BuildRequires: make, python-docutils
 
 %description
-Cookie VMOD for Varnish.
+Cookie VMOD for Varnish %{VARNISHSRC}.
 
 %prep
 %setup -n libvmod-cookie
@@ -35,5 +35,9 @@ rm -rf %{buildroot}
 %{_mandir}/man?/*
 
 %changelog
+* Wed Mar  5 2014 Lasse Karstensen <lkarsten@varnish-software.com> - 0.1-0.20140305
+- Updated description to work better with Redhat Satellite.
+
 * Tue Nov 14 2012 Lasse Karstensen <lasse@varnish-software.com> - 0.1-0.20121114
 - Initial version.
+
