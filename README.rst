@@ -7,9 +7,10 @@ Varnish Cookie Module
 ----------------------
 
 :Author: Lasse Karstensen
-:Date: 2013-07-12
+:Date: 2014-03-24
 :Version: 1.0
 :Manual section: 3
+
 
 SYNOPSIS
 ========
@@ -264,4 +265,5 @@ COPYRIGHT
 This document is licensed under the same license as the
 libvmod-example project. See LICENSE for details.
 
-* Copyright (c) 2011-2013 Varnish Software
+* Copyright (c) 2011-2014 Varnish Software
+
