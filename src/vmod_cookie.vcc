@@ -1,4 +1,4 @@
-$Module cookie Varnish Cookie Module
+$Module cookie 3 Varnish Cookie Module
 $Init init_function
 $Function VOID parse(STRING)
 $Function VOID clean()
