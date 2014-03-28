@@ -1,0 +1,39 @@
+varnishtest "Test cookie vmod"
+
+server s1 {
+       rxreq
+       txresp
+} -start
+
+varnish v1 -vcl+backend {
+	import cookie from "${vmod_topbuild}/src/.libs/libvmod_cookie.so";
+
+	sub vcl_recv {
+		cookie.set("cookie1", "cookie1value");
+		cookie.set("cookie2", "cookie2value");
+	}
+	sub vcl_deliver {
+		if (cookie.isset("cookie2")) {
+			set resp.http.X-foo = "ok";
+		}
+		else {
+			set resp.http.X-foo = "nok";
+		}
+
+		if (cookie.isset("non-existent")) {
+			set resp.http.X-foo = "nok";
+		}
+		else {
+			set resp.http.X-foo = "ok";
+		}
+	}
+} -start
+
+client c1 {
+	txreq -url "/"
+	rxresp
+	expect resp.http.X-foo == "ok"
+	expect resp.http.X-bar == "ok"
+}
+
+client c1 -run

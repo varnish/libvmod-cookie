@@ -154,6 +154,20 @@ vmod_set(const struct vrt_ctx *ctx, VCL_STRING name, VCL_STRING value) {
 	VTAILQ_INSERT_TAIL(&vcp->cookielist, newcookie, list);
 }
 
+VCL_BOOL
+vmod_isset(const struct vrt_ctx *ctx, const char *name) {
+	struct cookie *cookie, *tmp;
+	struct vmod_cookie *vcp = cobj_get(ctx);
+	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
+
+	VTAILQ_FOREACH_SAFE(cookie, &vcp->cookielist, list, tmp) {
+		if (strcmp(cookie->name, name) == 0) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
 VCL_STRING
 vmod_get(const struct vrt_ctx *ctx, VCL_STRING name) {
 	struct cookie *cookie, *tmp;
