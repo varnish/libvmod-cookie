@@ -22,12 +22,11 @@ varnish v1 -vcl+backend {
 		cookie.parse(req.http.cookie);
 
 		if (req.url == "/s1") {
-			set req.backend = s1;
+			set req.backend_hint = s1;
 		}
 		else {
-			set req.backend = s2;
+			set req.backend_hint = s2;
 		}
-
 	}
 	sub vcl_deliver {
 		set resp.http.x-val = cookie.get("a");
