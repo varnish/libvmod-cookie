@@ -152,6 +152,20 @@ vmod_set(struct sess *sp, const char *name, const char *value) {
 	VTAILQ_INSERT_TAIL(&vcp->cookielist, newcookie, list);
 }
 
+unsigned
+vmod_isset(struct sess *sp, const char *name) {
+	struct cookie *cookie, *tmp;
+	struct vmod_cookie *vcp = cobj_get(sp);
+	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
+
+	VTAILQ_FOREACH_SAFE(cookie, &vcp->cookielist, list, tmp) {
+		if (strcmp(cookie->name, name) == 0) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
 const char *
 vmod_get(struct sess *sp, const char *name) {
 	struct cookie *cookie, *tmp;

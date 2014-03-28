@@ -125,6 +125,28 @@ Example
 			std.log("cookie1 value is: " + cookie.get("cookie1"));
 		}
 
+isset
+-----
+
+Prototype
+        ::
+
+                isset(STRING cookiename)
+Return value
+	BOOL
+Description
+	Check if a given cookie is set in the internal vmod storage.
+
+Example
+        ::
+
+		import std;
+		sub vcl_recv {
+			cookie.parse("cookie1: value1; cookie2: value2;");
+			if (cookie.isset("cookie2")) {
+				std.log("cookie2 is set."));
+			}
+		}
 
 delete
 ------
