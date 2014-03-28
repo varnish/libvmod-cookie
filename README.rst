@@ -143,7 +143,7 @@ Example
 		sub vcl_recv {
 			cookie.parse("cookie1: value1; cookie2: value2;");
 			if (cookie.isset("cookie2")) {
-				std.log("cookie2 is set."));
+				std.log("cookie2 is set.");
 			}
 		}
 
