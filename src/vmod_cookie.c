@@ -10,7 +10,7 @@ Author: Lasse Karstensen <lasse@varnish-software.com>, July 2012.
 #include <stdio.h>
 
 #include "vrt.h"
-#include "bin/varnishd/cache.h"
+#include "cache/cache.h"
 
 #include "vcc_if.h"
 
@@ -53,34 +53,34 @@ cobj_clear(struct vmod_cookie *c) {
 }
 
 static struct vmod_cookie *
-cobj_get(struct sess *sp) {
+cobj_get(const struct vrt_ctx *ctx) {
 	struct vmod_cookie *vcp = pthread_getspecific(key);
 
 	if (!vcp) {
 		vcp = malloc(sizeof *vcp);
 		AN(vcp);
 		cobj_clear(vcp);
-		vcp->xid = sp->xid;
+		vcp->xid = ctx->req->sp->vxid;
 		AZ(pthread_setspecific(key, vcp));
 	}
 
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
-	if (vcp->xid != sp->xid) {
+	if (vcp->xid != ctx->req->sp->vxid) {
 		// Reuse previously allocated storage
 		cobj_clear(vcp);
-		vcp->xid = sp->xid;
+		vcp->xid = ctx->req->sp->vxid;
 	}
 
 	return (vcp);
 }
 
-void
-vmod_parse(struct sess *sp, const char *cookieheader) {
+VCL_VOID
+vmod_parse(const struct vrt_ctx *ctx, VCL_STRING cookieheader) {
 	char tokendata[MAX_COOKIESTRING];
 	char *token, *tokstate, *key, *value, *sepindex;
 	char *dataptr = tokendata;
-	struct vmod_cookie *vcp = cobj_get(sp);
+	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
 	struct cookie *newcookie;
@@ -119,43 +119,45 @@ vmod_parse(struct sess *sp, const char *cookieheader) {
 		value = sepindex + 1;
 		*sepindex = '\0';
 
-		vmod_set(sp, token, value);
+		vmod_set(ctx, token, value);
 		i++;
 	}
+
 	VSL(SLT_VCL_Log, 0, "libvmod-cookie: parsed %i cookies.", i);
 }
 
 
-void
-vmod_set(struct sess *sp, const char *name, const char *value) {
+VCL_VOID
+vmod_set(const struct vrt_ctx *ctx, VCL_STRING name, VCL_STRING value) {
 	struct cookie *newcookie;
-	struct vmod_cookie *vcp = cobj_get(sp);
+	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
 	// Empty cookies should be ignored.
 	if (strlen(name) == 0 || strlen(value) == 0) {
 		return;
 	}
+
 	struct cookie *cookie;
 
 	VTAILQ_FOREACH(cookie, &vcp->cookielist, list) {
 		if (strcmp(cookie->name, name) == 0) {
-			cookie->value = WS_Dup(sp->ws, value);
+			cookie->value = WS_Printf(ctx->ws, "%s", value);
 			return;
 		}
 	}
 
-	newcookie = (struct cookie *) WS_Alloc(sp->ws, sizeof(struct cookie));
-	newcookie->name = WS_Dup(sp->ws, name);
-	newcookie->value = WS_Dup(sp->ws, value);
+	newcookie = (struct cookie *) WS_Alloc(ctx->ws, sizeof(struct cookie));
+	newcookie->name = WS_Printf(ctx->ws, "%s", name);
+	newcookie->value = WS_Printf(ctx->ws, "%s", value);
 
 	VTAILQ_INSERT_TAIL(&vcp->cookielist, newcookie, list);
 }
 
-const char *
-vmod_get(struct sess *sp, const char *name) {
+VCL_STRING
+vmod_get(const struct vrt_ctx *ctx, VCL_STRING name) {
 	struct cookie *cookie, *tmp;
-	struct vmod_cookie *vcp = cobj_get(sp);
+	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
 	VTAILQ_FOREACH_SAFE(cookie, &vcp->cookielist, list, tmp) {
@@ -167,10 +169,10 @@ vmod_get(struct sess *sp, const char *name) {
 }
 
 
-void
-vmod_delete(struct sess *sp, const char *name) {
+VCL_VOID
+vmod_delete(const struct vrt_ctx *ctx, VCL_STRING name) {
 	struct cookie *cookie, *tmp;
-	struct vmod_cookie *vcp = cobj_get(sp);
+	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
 	VTAILQ_FOREACH_SAFE(cookie, &vcp->cookielist, list, tmp) {
@@ -181,10 +183,10 @@ vmod_delete(struct sess *sp, const char *name) {
 	}
 }
 
-void
-vmod_clean(struct sess *sp) {
+VCL_VOID
+vmod_clean(const struct vrt_ctx *ctx) {
 	struct cookie *cookie;
-	struct vmod_cookie *vcp = cobj_get(sp);
+	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
 	while (!VTAILQ_EMPTY(&vcp->cookielist)) {
@@ -193,17 +195,17 @@ vmod_clean(struct sess *sp) {
 	}
 }
 
-void
-vmod_filter_except(struct sess *sp, const char *whitelist) {
+VCL_VOID
+vmod_filter_except(const struct vrt_ctx *ctx, VCL_STRING whitelist) {
 	char cookienames[MAX_COOKIEPART][MAXCOOKIES];
 	char tmpstr[MAX_COOKIESTRING];
 	struct cookie *cookie, *tmp;
 	char *tokptr, *saveptr;
 	int i, found = 0, num_cookies = 0;
-	struct vmod_cookie *vcp = cobj_get(sp);
+	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
-	strcpy(tmpstr, (char *)whitelist);
+	strcpy(tmpstr, whitelist);
 	tokptr = strtok_r(tmpstr, ",", &saveptr);
 	if (!tokptr) return;
 
@@ -234,17 +236,17 @@ vmod_filter_except(struct sess *sp, const char *whitelist) {
 }
 
 
-const char *
-vmod_get_string(struct sess *sp) {
+VCL_STRING
+vmod_get_string(const struct vrt_ctx *ctx) {
 	struct cookie *curr;
 	struct vsb *output;
 	unsigned v, u;
 	char *p;
-	struct vmod_cookie *vcp = cobj_get(sp);
+	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
-	u = WS_Reserve(sp->wrk->ws, 0);
-	p = sp->wrk->ws->f;
+	u = WS_Reserve(ctx->ws, 0);
+	p = ctx->ws->f;
 
 	output = VSB_new_auto();
 	AN(output);
@@ -261,18 +263,18 @@ vmod_get_string(struct sess *sp) {
 
 	v++;
 	if (v > u) {
-		WS_Release(sp->wrk->ws, 0);
+		WS_Release(ctx->ws, 0);
 		VSL(SLT_Debug, 0, "cookie-vmod: Workspace overflowed, abort");
 		return (NULL);
 	}
-	WS_Release(sp->wrk->ws, v);
+	WS_Release(ctx->ws, v);
 
 	return (p);
 }
 
 
-const char *
-vmod_format_rfc1123(struct sess *sp, double ts, double duration) {
-        return VRT_time_string(sp, ts + duration);
+VCL_STRING
+vmod_format_rfc1123(const struct vrt_ctx *ctx, VCL_TIME ts, VCL_DURATION duration) {
+        return VRT_TIME_string(ctx, ts + duration);
 }
 
