@@ -21,10 +21,10 @@ varnish v1 -vcl+backend {
 		}
 
 		if (cookie.isset("non-existent")) {
-			set resp.http.X-foo = "nok";
+			set resp.http.X-bar = "nok";
 		}
 		else {
-			set resp.http.X-foo = "ok";
+			set resp.http.X-bar = "ok";
 		}
 	}
 } -start
