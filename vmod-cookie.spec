@@ -1,7 +1,7 @@
 Summary: Cookie VMOD for Varnish %{VARNISHVER}
 Name: vmod-cookie
 Version: 1.01
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: BSD
 Group: System Environment/Daemons
 Source0: libvmod-cookie.tar.gz
