@@ -94,9 +94,14 @@ vmod_parse(const struct vrt_ctx *ctx, VCL_STRING cookieheader) {
 		VTAILQ_REMOVE(&vcp->cookielist, newcookie, list);
 	}
 
-	if (cookieheader == NULL || strlen(cookieheader) == 0
-	    || strlen(cookieheader) >= MAX_COOKIESTRING)
+	if (cookieheader == NULL || strlen(cookieheader) == 0) {
+		VSL(SLT_VCL_Log, 0, "cookie-vmod: nothing to parse");
 		return;
+
+	if (strlen(cookieheader)+1 >= MAX_COOKIESTRING)
+		VSL(SLT_VCL_Log, 0, "cookie-vmod: cookie string overflowed, abort");
+		return;
+	}
 
 	/* strtok modifies source, fewer surprises. */
 	strncpy(tokendata, cookieheader, sizeof(tokendata));
@@ -138,6 +143,10 @@ vmod_set(const struct vrt_ctx *ctx, VCL_STRING name, VCL_STRING value) {
 		return;
 	}
 
+	if (strlen(name)+1 >= MAX_COOKIEPART) {
+		VSL(SLT_Debug, 0, "cookie-vmod: cookie string overflowed, abort");
+		return;
+	}
 	struct cookie *cookie;
 
 	VTAILQ_FOREACH(cookie, &vcp->cookielist, list) {
@@ -148,6 +157,10 @@ vmod_set(const struct vrt_ctx *ctx, VCL_STRING name, VCL_STRING value) {
 	}
 
 	newcookie = (struct cookie *) WS_Alloc(ctx->ws, sizeof(struct cookie));
+	if (newcookie == NULL) {
+		VSL(SLT_Debug, 0, "cookie-vmod: unable to get storage for cookie");
+		return;
+	}
 	newcookie->name = WS_Printf(ctx->ws, "%s", name);
 	newcookie->value = WS_Printf(ctx->ws, "%s", value);
 
