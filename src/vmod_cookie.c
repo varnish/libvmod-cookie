@@ -52,6 +52,19 @@ cobj_clear(struct vmod_cookie *c) {
 	c->xid = 0;
 }
 
+static unsigned
+get_vxid(const struct vrt_ctx *ctx) {
+	CHECK_OBJ_NOTNULL(ctx, VRT_CTX_MAGIC);
+
+	if (ctx->req) {
+		CHECK_OBJ_NOTNULL(ctx->req, REQ_MAGIC);
+		return (ctx->req->vsl->wid & VSL_IDENTMASK);
+	} else {
+		CHECK_OBJ_NOTNULL(ctx->bo, BUSYOBJ_MAGIC);
+		return (ctx->bo->vsl->wid & VSL_IDENTMASK);
+	}
+}
+
 static struct vmod_cookie *
 cobj_get(const struct vrt_ctx *ctx) {
 	struct vmod_cookie *vcp = pthread_getspecific(key);
@@ -60,16 +73,16 @@ cobj_get(const struct vrt_ctx *ctx) {
 		vcp = malloc(sizeof *vcp);
 		AN(vcp);
 		cobj_clear(vcp);
-		vcp->xid = ctx->req->sp->vxid;
+		vcp->xid = get_vxid(ctx);
 		AZ(pthread_setspecific(key, vcp));
 	}
 
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
-	if (vcp->xid != ctx->req->sp->vxid) {
+	if (vcp->xid != get_vxid(ctx)) {
 		// Reuse previously allocated storage
 		cobj_clear(vcp);
-		vcp->xid = ctx->req->sp->vxid;
+		vcp->xid = get_vxid(ctx);
 	}
 
 	return (vcp);
