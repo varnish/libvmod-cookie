@@ -78,7 +78,7 @@ cobj_get(const struct vrt_ctx *ctx) {
 VCL_VOID
 vmod_parse(const struct vrt_ctx *ctx, VCL_STRING cookieheader) {
 	char tokendata[MAX_COOKIESTRING];
-	char *token, *tokstate, *key, *value, *sepindex;
+	char *token, *tokstate, *value, *sepindex;
 	char *dataptr = tokendata;
 	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
