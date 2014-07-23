@@ -8,5 +8,5 @@ Vcs-Git: git://github.com/lkarsten/libvmod-cookie.git
 
 Package: libvmod-cookie
 Architecture: any
-Depends: varnish, ${misc:Depends}
+Depends: varnish, ${Varnish:ABI}, ${misc:Depends}
 Description: Cookie vmod for Varnish
