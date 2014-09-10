@@ -1,7 +1,7 @@
 Summary: Cookie VMOD for Varnish %{VARNISHVER}
 Name: vmod-cookie
-Version: 1.01
-Release: 2%{?dist}
+Version: 1.21
+Release: 1%{?dist}
 License: BSD
 Group: System Environment/Daemons
 Source0: libvmod-cookie.tar.gz
@@ -35,6 +35,9 @@ rm -rf %{buildroot}
 %{_mandir}/man?/*
 
 %changelog
+* Wed Sep 10 2014 Lasse Karstensen <lkarsten@varnish-software.com> - 1.21-1
+- Bump version to clear up earlier package mistake.
+
 * Wed Mar  5 2014 Lasse Karstensen <lkarsten@varnish-software.com> - 0.1-0.20140305
 - Updated description to work better with Redhat Satellite.
 

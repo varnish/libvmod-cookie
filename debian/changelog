@@ -1,3 +1,9 @@
+libvmod-cookie (1.21) unstable; urgency=low
+
+  * Pseudo-release to clear up packaging mistake. No code changes.
+
+ -- Lasse Karstensen <lkarsten@varnish-software.com>  Wed, 10 Sep 2014 15:19:51 +0200
+
 libvmod-cookie (1.01) unstable; urgency=low
 
   * First version
