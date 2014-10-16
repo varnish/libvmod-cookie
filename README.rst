@@ -101,7 +101,7 @@ Example
 
 		import std;
 		sub vcl_recv {
-			cookie.parse("cookie1: value1; cookie2: value2;");
+			cookie.parse("cookie1=value1; cookie2=value2;");
 			std.log("cookie1 value is: " + cookie.get("cookie1"));
 		}
 
@@ -142,7 +142,7 @@ Example
 
 		import std;
 		sub vcl_recv {
-			cookie.parse("cookie1: value1; cookie2: value2;");
+			cookie.parse("cookie1=value1; cookie2=value2;");
 			if (cookie.isset("cookie2")) {
 				std.log("cookie2 is set.");
 			}
@@ -164,9 +164,9 @@ Example
         ::
 
 		sub vcl_recv {
-			cookie.parse("cookie1: value1; cookie2: value2;");
+			cookie.parse("cookie1=value1; cookie2=value2;");
 			cookie.delete("cookie2");
-			// get_string() will now yield "cookie1: value1";
+			// get_string() will now yield "cookie1=value1";
 		}
 
 
@@ -187,10 +187,10 @@ Example
         ::
 
 		sub vcl_recv {
-			cookie.parse("cookie1: value1; cookie2: value2; cookie3: value3");
+			cookie.parse("cookie1=value1; cookie2=value2; cookie3=value3");
 			cookie.filter_except("cookie1,cookie2");
 			// get_string() will now yield
-			// "cookie1: value1; cookie2: value2;";
+			// "cookie1=value1; cookie2=value2;";
 		}
 
 
