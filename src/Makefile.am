@@ -13,10 +13,10 @@ libvmod_cookie_la_SOURCES = \
 vcc_if.c vcc_if.h: @VMODTOOL@ $(top_srcdir)/src/vmod_cookie.vcc
 	@VMODTOOL@ $(top_srcdir)/src/vmod_cookie.vcc
 
-VMOD_TESTS = tests/*.vtc
+VMOD_TESTS = $(top_srcdir)/src/tests/*.vtc
 .PHONY: $(VMOD_TESTS)
 
-tests/*.vtc:
+$(top_srcdir)/src/tests/*.vtc:
 	@VARNISHTEST@ -Dvarnishd=@VARNISHD@ -Dvmod_topbuild=$(abs_top_builddir) $@
 
 check: $(VMOD_TESTS)
