@@ -3,6 +3,8 @@ ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = src
 
 doc_DATA = README.rst LICENSE
+DISTCHECK_CONFIGURE_FLAGS = \
+	VMOD_DIR='$${libdir}/varnish/vmods'
 
 EXTRA_DIST = README.rst LICENSE vmod-cookie.spec debian
 
