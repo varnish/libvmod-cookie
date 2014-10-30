@@ -4,6 +4,8 @@ SUBDIRS = src
 
 doc_DATA = README.rst LICENSE
 
+EXTRA_DIST = README.rst LICENSE vmod-cookie.spec debian
+
 dist_man_MANS = vmod_cookie.3
 MAINTAINERCLEANFILES = $(dist_man_MANS)
 
