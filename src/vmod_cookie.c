@@ -18,6 +18,8 @@ Author: Lasse Karstensen <lasse@varnish-software.com>, July 2012.
 #define MAX_COOKIESTRING 8196 /* cookie string maxlength */
 #define MAXCOOKIES 100
 
+#define XID(u) ((u) & VSL_IDENTMASK)
+
 struct cookie {
 	char *name;
 	char *value;
@@ -60,16 +62,16 @@ cobj_get(const struct vrt_ctx *ctx) {
 		vcp = malloc(sizeof *vcp);
 		AN(vcp);
 		cobj_clear(vcp);
-		vcp->xid = ctx->req->sp->vxid;
+		vcp->xid = XID(ctx->req->vsl->wid);
 		AZ(pthread_setspecific(key, vcp));
 	}
 
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
-	if (vcp->xid != ctx->req->sp->vxid) {
+	if (vcp->xid != XID(ctx->req->vsl->wid)) {
 		// Reuse previously allocated storage
 		cobj_clear(vcp);
-		vcp->xid = ctx->req->sp->vxid;
+		vcp->xid = XID(ctx->req->vsl->wid);
 	}
 
 	return (vcp);
