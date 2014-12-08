@@ -5,7 +5,7 @@ server s1 {
        txresp
 } -start
 
-varnish v1 -cliok "param.set thread_pool_stack 128k" -vcl+backend {
+varnish v1 -vcl+backend {
 	import cookie from "${vmod_topbuild}/src/.libs/libvmod_cookie.so";
 
 	sub vcl_recv {

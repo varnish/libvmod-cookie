@@ -10,6 +10,7 @@ Author: Lasse Karstensen <lasse@varnish-software.com>, July 2012.
 #include <stdio.h>
 
 #include "vrt.h"
+#include "vqueue.h"
 #include "cache/cache.h"
 
 #include "vcc_if.h"
@@ -22,6 +23,11 @@ struct cookie {
 	char *name;
 	char *value;
 	VTAILQ_ENTRY(cookie) list;
+};
+
+struct whitelist {
+	char name[MAX_COOKIEPART];
+	VTAILQ_ENTRY(whitelist) list;
 };
 
 struct vmod_cookie {
@@ -223,43 +229,51 @@ vmod_clean(const struct vrt_ctx *ctx) {
 }
 
 VCL_VOID
-vmod_filter_except(const struct vrt_ctx *ctx, VCL_STRING whitelist) {
-	char cookienames[MAX_COOKIEPART][MAXCOOKIES];
-	char tmpstr[MAX_COOKIESTRING];
-	struct cookie *cookie, *tmp;
+vmod_filter_except(const struct vrt_ctx *ctx, VCL_STRING whitelist_s) {
+	char buf[MAX_COOKIESTRING];
+	struct cookie *cookieptr, *tmp;
 	char *tokptr, *saveptr;
-	int i, found = 0, num_cookies = 0;
+	int i, whitelisted = 0;
 	struct vmod_cookie *vcp = cobj_get(ctx);
+	struct whitelist *whentry;
+
+	VTAILQ_HEAD(, whitelist) whitelist_head;
+	VTAILQ_INIT(&whitelist_head);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
-	strcpy(tmpstr, whitelist);
-	tokptr = strtok_r(tmpstr, ",", &saveptr);
+	strcpy(buf, whitelist_s);
+	tokptr = strtok_r(buf, ",", &saveptr);
 	if (!tokptr) return;
 
-	// parse the whitelist.
+	/* Parse the supplied whitelist. */
 	while (1) {
-		strcpy(cookienames[num_cookies], tokptr);
-		num_cookies++;
-
+		whentry = malloc(sizeof(struct whitelist));
+		AN(whentry);
+		strcpy(whentry->name, tokptr);
+		VTAILQ_INSERT_TAIL(&whitelist_head, whentry, list);
 		tokptr = strtok_r(NULL, ",", &saveptr);
 		if (!tokptr) break;
 	}
 
-	// filter existing cookies that isn't in the whitelist.
-	VTAILQ_FOREACH_SAFE(cookie, &vcp->cookielist, list, tmp) {
-		found = 0;
-		for (i = 0; i < num_cookies; i++) {
-			if (strlen(cookie->name) == strlen(cookienames[i]) &&
-			    strcmp(cookienames[i], cookie->name) == 0) {
-				found = 1;
+	/* Filter existing cookies that isn't in the whitelist. */
+	VTAILQ_FOREACH_SAFE(cookieptr, &vcp->cookielist, list, tmp) {
+		whitelisted = 0;
+		VTAILQ_FOREACH(whentry, &whitelist_head, list) {
+			if (strlen(cookieptr->name) == strlen(whentry->name) &&
+			    strcmp(cookieptr->name, whentry->name) == 0) {
+				whitelisted = 1;
 				break;
 			}
 		}
-
-		if (!found) {
-			VTAILQ_REMOVE(&vcp->cookielist, cookie, list);
+		if (!whitelisted) {
+			VTAILQ_REMOVE(&vcp->cookielist, cookieptr, list);
 		}
-	} // foreach
+	}
+
+	VTAILQ_FOREACH(whentry, &whitelist_head, list) {
+		VTAILQ_REMOVE(&whitelist_head, whentry, list);
+		free(whentry);
+	}
 }
 
 
