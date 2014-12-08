@@ -1,4 +1,4 @@
-varnishtest "Test cookie vmod"
+varnishtest "Test cookie.isset()"
 
 server s1 {
        rxreq
@@ -10,30 +10,18 @@ varnish v1 -vcl+backend {
 
 	sub vcl_recv {
 		cookie.set("cookie1", "cookie1value");
-		cookie.set("cookie2", "cookie2value");
 	}
 	sub vcl_deliver {
-		if (cookie.isset("cookie2")) {
-			set resp.http.X-foo = "ok";
-		}
-		else {
-			set resp.http.X-foo = "nok";
-		}
-
-		if (cookie.isset("non-existent")) {
-			set resp.http.X-bar = "nok";
-		}
-		else {
-			set resp.http.X-bar = "ok";
-		}
+		set resp.http.does = cookie.isset("cookie1");
+		set resp.http.does-not = cookie.isset("non-existent");
 	}
 } -start
 
 client c1 {
 	txreq -url "/"
 	rxresp
-	expect resp.http.X-foo == "ok"
-	expect resp.http.X-bar == "ok"
+	expect resp.http.does == "true"
+	expect resp.http.does-not == "false"
 }
 
 client c1 -run
