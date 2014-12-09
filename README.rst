@@ -35,6 +35,10 @@ cookie.set() guaranteed to persist. This VMOD was designed to be used
 for cleaning up a request in vcl_recv, but works outside recv if needed.
 In such a case it is necessary to run cookie.parse() again.
 
+It is currently not safe/tested to call this VMOD in any fetch threads.
+Do the filtering in recv, fix up anything going in in deliver. Running it
+in vcl_backend_fetch and similar is untested and has undefined results.
+
 
 FUNCTIONS
 =========
