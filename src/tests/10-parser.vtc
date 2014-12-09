@@ -1,18 +1,8 @@
 varnishtest "Test cookie parser"
 
-server s1 {
+server s1 -repeat 5 {
        rxreq
        txresp
-
-       rxreq
-       txresp
-
-       rxreq
-       txresp
-
-       rxreq
-       txresp
-
 } -start
 
 varnish v1 -vcl+backend {
