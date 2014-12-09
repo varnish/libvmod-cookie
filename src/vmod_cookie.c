@@ -94,15 +94,15 @@ vmod_parse(const struct vrt_ctx *ctx, VCL_STRING cookieheader) {
 	/* If called twice during the same request, clean out old state */
 	vmod_clean(ctx);
 
-	VSLb(ctx->vsl, SLT_VCL_Log, "cookie-vmod: cookie string is %lu bytes.", strlen(cookieheader));
+	VSLb(ctx->vsl, SLT_Debug, "cookie: cookie string is %lu bytes.", strlen(cookieheader));
 
 	if (cookieheader == NULL || strlen(cookieheader) == 0) {
-		VSLb(ctx->vsl, SLT_VCL_Log, "cookie-vmod: nothing to parse");
+		VSLb(ctx->vsl, SLT_VCL_Log, "cookie: nothing to parse");
 		return;
 	}
 
 	if (strlen(cookieheader) >= MAX_COOKIE_STRING) {
-		VSLb(ctx->vsl, SLT_VCL_Log, "cookie-vmod: cookie string overflowed, abort");
+		VSLb(ctx->vsl, SLT_VCL_Log, "cookie: cookie string overflowed, abort");
 		return;
 	}
 
@@ -128,7 +128,7 @@ vmod_parse(const struct vrt_ctx *ctx, VCL_STRING cookieheader) {
 		value = sepindex + 1;
 		*sepindex = '\0';
 
-		VSLb(ctx->vsl, SLT_VCL_Log, "value length is %lu.", strlen(value));
+		VSLb(ctx->vsl, SLT_Debug, "value length is %lu.", strlen(value));
 		vmod_set(ctx, token, value);
 		i++;
 	}
@@ -304,7 +304,7 @@ vmod_get_string(const struct vrt_ctx *ctx) {
 
 	if (v > u) {
 		WS_Release(ctx->ws, 0);
-		VSLb(ctx->vsl, SLT_VCL_Log, "cookie: Workspace overflowed, abort");
+		VSLb(ctx->vsl, SLT_VCL_Log, "cookie: Workspace overflowed");
 		return (NULL);
 	}
 	WS_Release(ctx->ws, v);
