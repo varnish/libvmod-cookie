@@ -86,9 +86,8 @@ vmod_parse(const struct vrt_ctx *ctx, VCL_STRING cookieheader) {
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
 	char tokendata[MAX_COOKIE_STRING];
-	char *token, *tokstate, *key, *value, *sepindex;
+	char *token, *tokstate, *value, *sepindex;
 	char *dataptr = tokendata;
-	struct cookie *newcookie;
 
 	int i = 0;
 
@@ -234,7 +233,7 @@ vmod_filter_except(const struct vrt_ctx *ctx, VCL_STRING whitelist_s) {
 	char buf[MAX_COOKIE_STRING];
 	struct cookie *cookieptr;
 	char *tokptr, *saveptr;
-	int i, whitelisted = 0;
+	int whitelisted = 0;
 	struct vmod_cookie *vcp = cobj_get(ctx);
 	struct whitelist *whentry;
 
