@@ -30,9 +30,6 @@ A convenience function for formatting the Set-Cookie Expires date field
 is also included. It might be needed to use libvmod-header if there might
 be multiple Set-Cookie response headers.
 
-This vmod uses per-thread storage. You'll need to increase the
-thread_pool_stack to 200KB for this to work reliably.
-
 Only within a single VMOD call is the state set by cookie.parse() /
 cookie.set() guaranteed to persist. This VMOD was designed to be used
 for cleaning up a request in vcl_recv, but works outside recv if needed.
