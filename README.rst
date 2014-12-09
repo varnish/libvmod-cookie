@@ -247,20 +247,12 @@ using the varnishtest tool.
 
 Usage::
 
- ./configure VARNISHSRC=DIR [VMODDIR=DIR]
-
-`VARNISHSRC` is the directory of the Varnish source tree for which to
-compile your vmod. Both the `VARNISHSRC` and `VARNISHSRC/include`
-will be added to the include search paths for your module.
-
-Optionally you can also set the vmod install directory by adding
-`VMODDIR=DIR` (defaults to the pkg-config discovered directory from your
-Varnish installation).
+ ./configure --prefix=/usr
 
 Make targets:
 
 * make - builds the vmod
-* make install - installs the vmod in `VMODDIR`
+* make install - installs the vmod.
 * make check - runs the unit tests in ``src/tests/*.vtc``
 
 In your VCL you could then use this vmod along the following lines::
@@ -273,12 +265,6 @@ In your VCL you could then use this vmod along the following lines::
 	}
 
 
-HISTORY
-=======
-
-This manual page was released as part of the libvmod-example package,
-demonstrating how to create an out-of-tree Varnish vmod.
-
 COPYRIGHT
 =========
 
@@ -286,3 +272,4 @@ This document is licensed under the same license as the
 libvmod-example project. See LICENSE for details.
 
 * Copyright (c) 2011-2013 Varnish Software
+* Copyright (c) 2013-2014 Lasse Karstensen
