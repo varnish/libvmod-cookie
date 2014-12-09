@@ -86,8 +86,7 @@ vmod_parse(const struct vrt_ctx *ctx, VCL_STRING cookieheader) {
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
 	char tokendata[MAX_COOKIE_STRING];
-	char *token, *tokstate, *value, *sepindex;
-	char *dataptr = tokendata;
+	char *token, *tokstate, *value, *sepindex, *dataptr;
 
 	int i = 0;
 
