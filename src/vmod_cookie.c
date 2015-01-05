@@ -19,6 +19,8 @@ Author: Lasse Karstensen <lasse@varnish-software.com>, July 2012.
 #define MAX_COOKIE_STRING 4096 /* cookie string maxlength */
 
 struct cookie {
+	unsigned magic;
+#define VMOD_COOKIE_ENTRY_MAGIC 0x3BB41543
 	char *name;
 	char *value;
 	VTAILQ_ENTRY(cookie) list;
@@ -155,6 +157,7 @@ vmod_set(const struct vrt_ctx *ctx, VCL_STRING name, VCL_STRING value) {
 
 	struct cookie *cookie;
 	VTAILQ_FOREACH(cookie, &vcp->cookielist, list) {
+		CHECK_OBJ_NOTNULL(cookie, VMOD_COOKIE_ENTRY_MAGIC);
 		if (strcmp(cookie->name, name) == 0) {
 			cookie->value = WS_Printf(ctx->ws, "%s", value);
 			return;
@@ -179,6 +182,7 @@ vmod_isset(const struct vrt_ctx *ctx, const char *name) {
 
 	struct cookie *cookie;
 	VTAILQ_FOREACH(cookie, &vcp->cookielist, list) {
+		CHECK_OBJ_NOTNULL(cookie, VMOD_COOKIE_ENTRY_MAGIC);
 		if (strcmp(cookie->name, name) == 0) {
 			return 1;
 		}
@@ -193,6 +197,7 @@ vmod_get(const struct vrt_ctx *ctx, VCL_STRING name) {
 
 	struct cookie *cookie;
 	VTAILQ_FOREACH(cookie, &vcp->cookielist, list) {
+		CHECK_OBJ_NOTNULL(cookie, VMOD_COOKIE_ENTRY_MAGIC);
 		if (strcmp(cookie->name, name) == 0) {
 			return (cookie->value);
 		}
@@ -208,6 +213,7 @@ vmod_delete(const struct vrt_ctx *ctx, VCL_STRING name) {
 
 	struct cookie *cookie;
 	VTAILQ_FOREACH(cookie, &vcp->cookielist, list) {
+		CHECK_OBJ_NOTNULL(cookie, VMOD_COOKIE_ENTRY_MAGIC);
 		if (strcmp(cookie->name, name) == 0) {
 			VTAILQ_REMOVE(&vcp->cookielist, cookie, list);
 			/* No way to clean up storage, let ws reclaim do it. */
@@ -256,6 +262,7 @@ vmod_filter_except(const struct vrt_ctx *ctx, VCL_STRING whitelist_s) {
 
 	/* Filter existing cookies that isn't in the whitelist. */
 	VTAILQ_FOREACH(cookieptr, &vcp->cookielist, list) {
+		CHECK_OBJ_NOTNULL(cookieptr, VMOD_COOKIE_ENTRY_MAGIC);
 		whitelisted = 0;
 		VTAILQ_FOREACH(whentry, &whitelist_head, list) {
 			if (strlen(cookieptr->name) == strlen(whentry->name) &&
