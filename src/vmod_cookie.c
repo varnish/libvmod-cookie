@@ -93,12 +93,12 @@ vmod_parse(const struct vrt_ctx *ctx, VCL_STRING cookieheader) {
 	/* If called twice during the same request, clean out old state */
 	vmod_clean(ctx);
 
-	VSLb(ctx->vsl, SLT_Debug, "cookie: cookie string is %lu bytes.", strlen(cookieheader));
-
-	if (cookieheader == NULL || strlen(cookieheader) == 0) {
+	if (!cookieheader || strlen(cookieheader) == 0) {
 		VSLb(ctx->vsl, SLT_VCL_Log, "cookie: nothing to parse");
 		return;
 	}
+
+	VSLb(ctx->vsl, SLT_Debug, "cookie: cookie string is %lu bytes.", strlen(cookieheader));
 
 	if (strlen(cookieheader) >= MAX_COOKIE_STRING) {
 		VSLb(ctx->vsl, SLT_VCL_Log, "cookie: cookie string overflowed, abort");
