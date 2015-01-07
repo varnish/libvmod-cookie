@@ -27,9 +27,10 @@ varnish v1 -vcl+backend {
 		else {
 			set req.backend_hint = s2;
 		}
+		set req.http.x-val = cookie.get("a");
 	}
 	sub vcl_deliver {
-		set resp.http.x-val = cookie.get("a");
+		set resp.http.x-val = req.http.x-val;
 	}
 } -start
 
@@ -45,5 +46,4 @@ client c2 {
        rxresp
        expect resp.http.x-val == "foo"
 } -run
-
 
