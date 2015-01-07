@@ -8,12 +8,12 @@ server s1 {
 varnish v1 -vcl+backend {
 	import cookie from "${vmod_topbuild}/src/.libs/libvmod_cookie.so";
 
-
 	sub vcl_recv {
 		cookie.parse(req.http.cookie);
+		set req.http.X-foo = cookie.get_string();
 	}
 	sub vcl_deliver {
-		set resp.http.X-foo = cookie.get_string();
+		set resp.http.X-foo = req.http.x-foo;
 	}
 } -start
 
