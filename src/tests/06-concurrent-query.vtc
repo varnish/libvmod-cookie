@@ -4,14 +4,12 @@ server s1 {
        rxreq
        sema r1 sync 2
        expect req.url == "/s1"
-       sema r2 sync 2
        txresp
 } -start
 
 server s2 {
        rxreq
        expect req.url == "/s2"
-       sema r2 sync 2
        txresp
 } -start
 
@@ -46,4 +44,6 @@ client c2 {
        rxresp
        expect resp.http.x-val == "foo"
 } -run
+
+client c1 -wait
 
