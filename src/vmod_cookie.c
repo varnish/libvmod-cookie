@@ -169,6 +169,7 @@ vmod_set(const struct vrt_ctx *ctx, VCL_STRING name, VCL_STRING value) {
 		VSLb(ctx->vsl, SLT_VCL_Log, "cookie: unable to get storage for cookie");
 		return;
 	}
+	newcookie->magic = VMOD_COOKIE_ENTRY_MAGIC;
 	newcookie->name = WS_Printf(ctx->ws, "%s", name);
 	newcookie->value = WS_Printf(ctx->ws, "%s", value);
 
