@@ -230,6 +230,7 @@ vmod_clean(const struct vrt_ctx *ctx) {
 
 	struct cookie *cookie, *c_safe;
 	VTAILQ_FOREACH_SAFE(cookie, &vcp->cookielist, list, c_safe) {
+		CHECK_OBJ_NOTNULL(cookie, VMOD_COOKIE_ENTRY_MAGIC);
 		VTAILQ_REMOVE(&vcp->cookielist, cookie, list);
 	}
 }
@@ -288,8 +289,7 @@ VCL_STRING
 vmod_get_string(const struct vrt_ctx *ctx) {
 	struct cookie *curr;
 	struct vsb *output;
-	unsigned v, u;
-	char *p;
+	void *u;
 	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
@@ -297,25 +297,22 @@ vmod_get_string(const struct vrt_ctx *ctx) {
 	AN(output);
 
 	VTAILQ_FOREACH(curr, &vcp->cookielist, list) {
+		CHECK_OBJ_NOTNULL(curr, VMOD_COOKIE_ENTRY_MAGIC);
 		VSB_printf(output, "%s=%s; ", curr->name, curr->value);
 	}
 	VSB_trim(output);
 	VSB_finish(output);
-	v = 1 + VSB_len(output);
 
-	u = WS_Reserve(ctx->ws, 0);
-	p = ctx->ws->f;
-	strcpy(p, VSB_data(output));
-
-	VSB_delete(output);
-
-	if (v > u) {
-		WS_Release(ctx->ws, 0);
-		VSLb(ctx->vsl, SLT_VCL_Log, "cookie: Workspace overflowed");
-		return (NULL);
+	u = WS_Alloc(ctx->ws, VSB_len(output) + 1);
+	if (!u) {
+		VSLb(ctx->vsl, SLT_VCL_Log, "cookie: Workspace overflow");
+		VSB_delete(output);
+		return(NULL);
 	}
-	WS_Release(ctx->ws, v);
-	return (p);
+
+	strcpy(u, VSB_data(output));
+	VSB_delete(output);
+	return (u);
 }
 
 
