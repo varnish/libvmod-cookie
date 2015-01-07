@@ -7,8 +7,8 @@ Varnish Cookie Module
 ----------------------
 
 :Author: Lasse Karstensen
-:Date: 2013-07-12
-:Version: 1.0
+:Date: 2015-01-07
+:Version: 1.1
 :Manual section: 3
 
 SYNOPSIS
@@ -19,8 +19,7 @@ import cookie;
 DESCRIPTION
 ===========
 
-Functions to handle the content of the Cookie header without complex use of
-regular expressions.
+Handle HTTP cookies easier in Varnish VCL. (without regex)
 
 Parses a cookie header into an internal data store, where per-cookie
 get/set/delete functions are available. A filter_except() method removes all
@@ -30,14 +29,12 @@ A convenience function for formatting the Set-Cookie Expires date field
 is also included. It might be needed to use libvmod-header if there might
 be multiple Set-Cookie response headers.
 
-Only within a single VMOD call is the state set by cookie.parse() /
-cookie.set() guaranteed to persist. This VMOD was designed to be used
-for cleaning up a request in vcl_recv, but works outside recv if needed.
-In such a case it is necessary to run cookie.parse() again.
+Important: The state loaded with cookie.parse() can only be guaranteed
+within a single VCL call. Do the cookie operations in vcl_recv, and store
+any additional variables you need later on as fake request headers.
 
 It is currently not safe/tested to call this VMOD in any fetch threads.
-Do the filtering in recv, fix up anything going in in deliver. Running it
-in vcl_backend_fetch and similar is untested and has undefined results.
+(vcl_backend_fetch and similar)
 
 
 FUNCTIONS
@@ -272,4 +269,4 @@ This document is licensed under the same license as the
 libvmod-example project. See LICENSE for details.
 
 * Copyright (c) 2011-2013 Varnish Software
-* Copyright (c) 2013-2014 Lasse Karstensen
+* Copyright (c) 2013-2015 Lasse Karstensen
