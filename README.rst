@@ -7,8 +7,8 @@ Varnish Cookie Module
 ----------------------
 
 :Author: Lasse Karstensen
-:Date: 2015-01-07
-:Version: 1.1
+:Date: 2015-03-27
+:Version: 1.02
 :Manual section: 3
 
 SYNOPSIS
