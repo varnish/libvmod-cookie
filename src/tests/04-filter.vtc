@@ -3,6 +3,8 @@ varnishtest "Test cookie vmod"
 server s1 {
        rxreq
        txresp
+       rxreq
+       txresp
 } -start
 
 varnish v1 -vcl+backend {
@@ -25,7 +27,7 @@ varnish v1 -vcl+backend {
 } -start
 
 client c1 {
-	txreq -url "/"
+	txreq -url "/c1"
 	rxresp
 	expect resp.http.X-foo == "cookie2=cookie2value; cookie4=cookie4value;"
 }
