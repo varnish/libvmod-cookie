@@ -26,9 +26,9 @@ struct cookie {
 	VTAILQ_ENTRY(cookie) list;
 };
 
-struct whitelist {
+struct list {
 	char name[MAX_COOKIE_NAME];
-	VTAILQ_ENTRY(whitelist) list;
+	VTAILQ_ENTRY(list) list;
 };
 
 struct vmod_cookie {
@@ -252,7 +252,7 @@ vmod_filter_function(const struct vrt_ctx *ctx, VCL_STRING list_s, VCL_INT white
 	tokptr = strtok_r(buf, ",", &saveptr);
 	if (!tokptr) return;
 
-	/* Parse the supplied whitelist. */
+	/* Parse the supplied list. */
 	while (1) {
 		entry = malloc(sizeof(struct list));
 		AN(entry);
@@ -262,7 +262,7 @@ vmod_filter_function(const struct vrt_ctx *ctx, VCL_STRING list_s, VCL_INT white
 		if (!tokptr) break;
 	}
 
-	/* Filter existing cookies that isn't in the whitelist. */
+	/* Filter existing cookies that is or isn't (depends on the white flag) in the list. */
 	VTAILQ_FOREACH(cookieptr, &vcp->cookielist, list) {
 		CHECK_OBJ_NOTNULL(cookieptr, VMOD_COOKIE_ENTRY_MAGIC);
 		listed = 0;
