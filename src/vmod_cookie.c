@@ -236,28 +236,28 @@ vmod_clean(const struct vrt_ctx *ctx) {
 }
 
 VCL_VOID
-vmod_filter_except(const struct vrt_ctx *ctx, VCL_STRING whitelist_s) {
+vmod_filter_function(const struct vrt_ctx *ctx, VCL_STRING list_s, VCL_INT white) {
 	char buf[MAX_COOKIE_STRING];
 	struct cookie *cookieptr;
 	char *tokptr, *saveptr;
-	int whitelisted = 0;
+	int listed = 0;
 	struct vmod_cookie *vcp = cobj_get(ctx);
-	struct whitelist *whentry;
+	struct list *entry;
 
-	VTAILQ_HEAD(, whitelist) whitelist_head;
-	VTAILQ_INIT(&whitelist_head);
+	VTAILQ_HEAD(, list) list_head;
+	VTAILQ_INIT(&list_head);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
-	strcpy(buf, whitelist_s);
+	strcpy(buf, list_s);
 	tokptr = strtok_r(buf, ",", &saveptr);
 	if (!tokptr) return;
 
 	/* Parse the supplied whitelist. */
 	while (1) {
-		whentry = malloc(sizeof(struct whitelist));
-		AN(whentry);
-		strcpy(whentry->name, tokptr);
-		VTAILQ_INSERT_TAIL(&whitelist_head, whentry, list);
+		entry = malloc(sizeof(struct list));
+		AN(entry);
+		strcpy(entry->name, tokptr);
+		VTAILQ_INSERT_TAIL(&list_head, entry, list);
 		tokptr = strtok_r(NULL, ",", &saveptr);
 		if (!tokptr) break;
 	}
@@ -265,25 +265,34 @@ vmod_filter_except(const struct vrt_ctx *ctx, VCL_STRING whitelist_s) {
 	/* Filter existing cookies that isn't in the whitelist. */
 	VTAILQ_FOREACH(cookieptr, &vcp->cookielist, list) {
 		CHECK_OBJ_NOTNULL(cookieptr, VMOD_COOKIE_ENTRY_MAGIC);
-		whitelisted = 0;
-		VTAILQ_FOREACH(whentry, &whitelist_head, list) {
-			if (strlen(cookieptr->name) == strlen(whentry->name) &&
-			    strcmp(cookieptr->name, whentry->name) == 0) {
-				whitelisted = 1;
+		listed = 0;
+		VTAILQ_FOREACH(entry, &list_head, list) {
+			if (strlen(cookieptr->name) == strlen(entry->name) &&
+			    strcmp(cookieptr->name, entry->name) == 0) {
+				listed = 1;
 				break;
 			}
 		}
-		if (!whitelisted) {
+		if ((white && !listed) || (!white && listed)) {
 			VTAILQ_REMOVE(&vcp->cookielist, cookieptr, list);
 		}
 	}
 
-	VTAILQ_FOREACH(whentry, &whitelist_head, list) {
-		VTAILQ_REMOVE(&whitelist_head, whentry, list);
-		free(whentry);
+	VTAILQ_FOREACH(entry, &list_head, list) {
+		VTAILQ_REMOVE(&list_head, entry, list);
+		free(entry);
 	}
 }
 
+VCL_VOID
+vmod_filter_except(const struct vrt_ctx *ctx, VCL_STRING whitelist_s) {
+	vmod_filter_function(ctx, whitelist_s, 1);
+}
+
+VCL_VOID
+vmod_filter(const struct vrt_ctx *ctx, VCL_STRING blacklist_s) {
+	vmod_filter_function(ctx, blacklist_s, 0);
+}
 
 VCL_STRING
 vmod_get_string(const struct vrt_ctx *ctx) {

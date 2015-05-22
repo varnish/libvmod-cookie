@@ -13,7 +13,11 @@ varnish v1 -vcl+backend {
 		cookie.set("cookie2", "cookie2value");
 		cookie.set("cookie3", "cookie3value");
 		cookie.set("cookie4", "cookie4value");
-		cookie.filter_except("cookie2,cookie4,baz");
+		if (req.url ~ "^/c1") {
+			cookie.filter_except("cookie2,cookie4,baz");
+		} else {
+			cookie.filter("cookie2,cookie4,baz");
+		}
 	}
 	sub vcl_deliver {
 		set resp.http.X-foo = cookie.get_string();
@@ -27,3 +31,11 @@ client c1 {
 }
 
 client c1 -run
+
+client c2 {
+	txreq -url "/c2"
+	rxresp
+	expect resp.http.X-foo == "cookie1=cookie1value; cookie3=cookie3value;"
+}
+
+client c2 -run
