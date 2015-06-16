@@ -60,7 +60,7 @@ cobj_clear(struct vmod_cookie *c) {
 }
 
 static struct vmod_cookie *
-cobj_get(const struct vrt_ctx *ctx) {
+cobj_get(VRT_CTX) {
 	struct vmod_cookie *vcp = pthread_getspecific(key);
 
 	if (!vcp) {
@@ -83,7 +83,7 @@ cobj_get(const struct vrt_ctx *ctx) {
 }
 
 VCL_VOID
-vmod_parse(const struct vrt_ctx *ctx, VCL_STRING cookieheader) {
+vmod_parse(VRT_CTX, VCL_STRING cookieheader) {
 	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
@@ -138,7 +138,7 @@ vmod_parse(const struct vrt_ctx *ctx, VCL_STRING cookieheader) {
 
 
 VCL_VOID
-vmod_set(const struct vrt_ctx *ctx, VCL_STRING name, VCL_STRING value) {
+vmod_set(VRT_CTX, VCL_STRING name, VCL_STRING value) {
 	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
@@ -177,7 +177,7 @@ vmod_set(const struct vrt_ctx *ctx, VCL_STRING name, VCL_STRING value) {
 }
 
 VCL_BOOL
-vmod_isset(const struct vrt_ctx *ctx, const char *name) {
+vmod_isset(VRT_CTX, const char *name) {
 	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
@@ -192,7 +192,7 @@ vmod_isset(const struct vrt_ctx *ctx, const char *name) {
 }
 
 VCL_STRING
-vmod_get(const struct vrt_ctx *ctx, VCL_STRING name) {
+vmod_get(VRT_CTX, VCL_STRING name) {
 	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
@@ -208,7 +208,7 @@ vmod_get(const struct vrt_ctx *ctx, VCL_STRING name) {
 
 
 VCL_VOID
-vmod_delete(const struct vrt_ctx *ctx, VCL_STRING name) {
+vmod_delete(VRT_CTX, VCL_STRING name) {
 	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
@@ -224,7 +224,7 @@ vmod_delete(const struct vrt_ctx *ctx, VCL_STRING name) {
 }
 
 VCL_VOID
-vmod_clean(const struct vrt_ctx *ctx) {
+vmod_clean(VRT_CTX) {
 	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
@@ -236,7 +236,7 @@ vmod_clean(const struct vrt_ctx *ctx) {
 }
 
 VCL_VOID
-vmod_filter_except(const struct vrt_ctx *ctx, VCL_STRING whitelist_s) {
+vmod_filter_except(VRT_CTX, VCL_STRING whitelist_s) {
 	char buf[MAX_COOKIE_STRING];
 	struct cookie *cookieptr;
 	char *tokptr, *saveptr;
@@ -286,7 +286,7 @@ vmod_filter_except(const struct vrt_ctx *ctx, VCL_STRING whitelist_s) {
 
 
 VCL_STRING
-vmod_get_string(const struct vrt_ctx *ctx) {
+vmod_get_string(VRT_CTX) {
 	struct cookie *curr;
 	struct vsb *output;
 	void *u;
@@ -317,7 +317,7 @@ vmod_get_string(const struct vrt_ctx *ctx) {
 
 
 VCL_STRING
-vmod_format_rfc1123(const struct vrt_ctx *ctx, VCL_TIME ts, VCL_DURATION duration) {
+vmod_format_rfc1123(VRT_CTX, VCL_TIME ts, VCL_DURATION duration) {
         return VRT_TIME_string(ctx, ts + duration);
 }
 
