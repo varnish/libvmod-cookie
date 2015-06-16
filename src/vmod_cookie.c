@@ -92,9 +92,6 @@ vmod_parse(VRT_CTX, VCL_STRING cookieheader) {
 
 	int i = 0;
 
-	/* If called twice during the same request, clean out old state */
-	vmod_clean(ctx);
-
 	if (!cookieheader || strlen(cookieheader) == 0) {
 		VSLb(ctx->vsl, SLT_VCL_Log, "cookie: nothing to parse");
 		return;
@@ -105,6 +102,11 @@ vmod_parse(VRT_CTX, VCL_STRING cookieheader) {
 	if (strlen(cookieheader) >= MAX_COOKIE_STRING) {
 		VSLb(ctx->vsl, SLT_VCL_Log, "cookie: cookie string overflowed, abort");
 		return;
+	}
+
+	if (!VTAILQ_EMPTY(&vcp->cookielist)) {
+		/* If called twice during the same request, clean out old state */
+		vmod_clean(ctx);
 	}
 
 	/* strtok modifies source, fewer surprises. */
@@ -227,6 +229,8 @@ VCL_VOID
 vmod_clean(VRT_CTX) {
 	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
+
+	AN(&vcp->cookielist);
 
 	struct cookie *cookie, *c_safe;
 	VTAILQ_FOREACH_SAFE(cookie, &vcp->cookielist, list, c_safe) {
