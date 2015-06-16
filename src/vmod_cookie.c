@@ -229,14 +229,9 @@ VCL_VOID
 vmod_clean(VRT_CTX) {
 	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
-
 	AN(&vcp->cookielist);
 
-	struct cookie *cookie, *c_safe;
-	VTAILQ_FOREACH_SAFE(cookie, &vcp->cookielist, list, c_safe) {
-		CHECK_OBJ_NOTNULL(cookie, VMOD_COOKIE_ENTRY_MAGIC);
-		VTAILQ_REMOVE(&vcp->cookielist, cookie, list);
-	}
+	VTAILQ_INIT(&vcp->cookielist);
 }
 
 VCL_VOID
