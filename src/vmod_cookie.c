@@ -6,8 +6,14 @@ Simplifies handling of the Cookie request header.
 Author: Lasse Karstensen <lasse@varnish-software.com>, July 2012.
 */
 
+#include "config.h"
+
 #include <stdlib.h>
 #include <stdio.h>
+
+#ifndef HAVE_VSB_TRIM
+#include <ctype.h>
+#endif
 
 #include "vrt.h"
 #include "vqueue.h"
@@ -40,6 +46,20 @@ struct vmod_cookie {
 
 static pthread_key_t key;
 static pthread_once_t key_is_initialized = PTHREAD_ONCE_INIT;
+
+#ifndef HAVE_VSB_TRIM
+int
+VSB_trim(struct vsb *s)
+{
+	if (s->s_error != 0)
+		return (-1);
+
+	while (s->s_len > 0 && isspace(s->s_buf[s->s_len-1]))
+		--s->s_len;
+
+	return (0);
+}
+#endif
 
 static void
 mkkey(void) {
