@@ -15,6 +15,7 @@ Author: Lasse Karstensen <lasse@varnish-software.com>, July 2012.
 #include <ctype.h>
 #endif
 
+#include "vcl.h"
 #include "vrt.h"
 #include "vqueue.h"
 #include "cache/cache.h"
@@ -67,7 +68,13 @@ mkkey(void) {
 }
 
 int
-init_function(struct vmod_priv *priv, const struct VCL_conf *conf) {
+event_function(VRT_CTX, struct vmod_priv *priv, enum vcl_event_e e)
+{
+	(void)ctx;
+	(void)priv;
+
+	if (e != VCL_EVENT_LOAD)
+		return (0);
 	pthread_once(&key_is_initialized, mkkey);
 	return (0);
 }

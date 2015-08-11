@@ -1,5 +1,5 @@
 $Module cookie 3 Varnish Cookie Module
-$Init init_function
+$Event event_function
 $Function VOID parse(STRING)
 $Function VOID clean()
 $Function VOID set(STRING, STRING)
