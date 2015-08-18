@@ -144,13 +144,11 @@ vmod_set(VRT_CTX, VCL_STRING name, VCL_STRING value) {
 	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
-	AN(name);
-	AN(value);
-
 	/* Empty cookies should be ignored. */
-	if (strlen(name) == 0 || strlen(value) == 0) {
+	if (name == NULL || strlen(name) == 0)
 		return;
-	}
+	if (value == NULL || strlen(value) == 0)
+		return;
 
 	if (strlen(name) + 1 >= MAX_COOKIE_NAME) {
 		VSLb(ctx->vsl, SLT_VCL_Log, "cookie: cookie string overflowed");
@@ -201,7 +199,8 @@ vmod_get(VRT_CTX, VCL_STRING name) {
 	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
-	AN(name);
+	if (name == NULL || strlen(name) == 0)
+		return(NULL);
 
 	struct cookie *cookie;
 	VTAILQ_FOREACH(cookie, &vcp->cookielist, list) {
@@ -219,7 +218,8 @@ vmod_delete(VRT_CTX, VCL_STRING name) {
 	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
-	AN(name);
+	if (name == NULL || strlen(name) == 0)
+		return;
 
 	struct cookie *cookie;
 	VTAILQ_FOREACH(cookie, &vcp->cookielist, list) {
