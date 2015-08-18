@@ -183,6 +183,9 @@ vmod_isset(VRT_CTX, const char *name) {
 	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
+	if (name == NULL || strlen(name) == 0)
+		return(0);
+
 	struct cookie *cookie;
 	VTAILQ_FOREACH(cookie, &vcp->cookielist, list) {
 		CHECK_OBJ_NOTNULL(cookie, VMOD_COOKIE_ENTRY_MAGIC);
@@ -197,6 +200,8 @@ VCL_STRING
 vmod_get(VRT_CTX, VCL_STRING name) {
 	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
+
+	AN(name);
 
 	struct cookie *cookie;
 	VTAILQ_FOREACH(cookie, &vcp->cookielist, list) {
@@ -213,6 +218,8 @@ VCL_VOID
 vmod_delete(VRT_CTX, VCL_STRING name) {
 	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
+
+	AN(name);
 
 	struct cookie *cookie;
 	VTAILQ_FOREACH(cookie, &vcp->cookielist, list) {
@@ -247,6 +254,7 @@ vmod_filter_except(VRT_CTX, VCL_STRING whitelist_s) {
 	VTAILQ_INIT(&whitelist_head);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
+	AN(whitelist_s);
 	strcpy(buf, whitelist_s);
 	tokptr = strtok_r(buf, ",", &saveptr);
 	if (!tokptr) return;

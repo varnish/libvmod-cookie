@@ -14,6 +14,7 @@ varnish v1 -vcl+backend {
 	sub vcl_deliver {
 		set resp.http.does = cookie.isset("cookie1");
 		set resp.http.does-not = cookie.isset("non-existent");
+		set resp.http.null = cookie.isset("");
 	}
 } -start
 
@@ -22,6 +23,7 @@ client c1 {
 	rxresp
 	expect resp.http.does == "true"
 	expect resp.http.does-not == "false"
+	expect resp.http.null == "false"
 }
 
 client c1 -run
