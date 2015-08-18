@@ -2,6 +2,7 @@ AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (c) 2011-2015 Varnish Software AS])
 AC_INIT([libvmod-cookie], [1.03])
 AC_CONFIG_MACRO_DIR([m4])
+m4_ifndef([VARNISH_VMOD_INCLUDES], AC_MSG_ERROR([Need varnish.m4]))
 AC_CONFIG_SRCDIR(src/vmod_cookie.vcc)
 AM_CONFIG_HEADER(config.h)
 
