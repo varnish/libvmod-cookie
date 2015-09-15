@@ -4,7 +4,7 @@ Version: 1.03
 Release: 1%{?dist}
 License: BSD
 Group: System Environment/Daemons
-Source0: libvmod-cookie.tar.gz
+Source0: libvmod-cookie-trunk.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: varnish >= 4.0.2
 BuildRequires: make
