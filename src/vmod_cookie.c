@@ -121,7 +121,8 @@ vmod_parse(VRT_CTX, VCL_STRING cookieheader) {
 			break;
 		}
 		value = strndup(p, pdiff(p, sep));
-		p = sep + 1;
+		if (sep != '\0')
+			p = sep + 1;
 
 		VSLb(ctx->vsl, SLT_Debug, "name(%lu)=%s value(%lu)=\"%s\" ", strlen(name), name, strlen(value), value);
 		vmod_set(ctx, name, value);
