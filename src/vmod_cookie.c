@@ -67,16 +67,16 @@ cobj_get(VRT_CTX) {
 		vcp = malloc(sizeof *vcp);
 		AN(vcp);
 		cobj_clear(vcp);
-		vcp->xid = ctx->req->sp->vxid;
+		vcp->xid = ctx->vsl->wid;
 		AZ(pthread_setspecific(key, vcp));
 	}
 
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
-	if (vcp->xid != ctx->req->sp->vxid) {
+	if (vcp->xid != ctx->vsl->wid) {
 		// Reuse previously allocated storage
 		cobj_clear(vcp);
-		vcp->xid = ctx->req->sp->vxid;
+		vcp->xid = ctx->vsl->wid;
 	}
 
 	return (vcp);
