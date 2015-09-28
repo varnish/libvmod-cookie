@@ -8,6 +8,8 @@ Author: Lasse Karstensen <lasse@varnish-software.com>, July 2012.
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 
 #include "vrt.h"
 #include "vqueue.h"
@@ -16,7 +18,6 @@ Author: Lasse Karstensen <lasse@varnish-software.com>, July 2012.
 #include "vcc_if.h"
 
 #define MAX_COOKIE_NAME 1024   /* name maxsize */
-#define MAX_COOKIE_STRING 4096 /* cookie string maxlength */
 
 struct cookie {
 	unsigned magic;
@@ -87,9 +88,8 @@ vmod_parse(VRT_CTX, VCL_STRING cookieheader) {
 	struct vmod_cookie *vcp = cobj_get(ctx);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
-	char tokendata[MAX_COOKIE_STRING];
-	char *token, *tokstate, *value, *sepindex, *dataptr;
-
+	char *name, *value;
+	const char *p, *sep;
 	int i = 0;
 
 	if (!cookieheader || strlen(cookieheader) == 0) {
@@ -97,42 +97,36 @@ vmod_parse(VRT_CTX, VCL_STRING cookieheader) {
 		return;
 	}
 
-	VSLb(ctx->vsl, SLT_Debug, "cookie: cookie string is %lu bytes.", strlen(cookieheader));
-
-	if (strlen(cookieheader) >= MAX_COOKIE_STRING) {
-		VSLb(ctx->vsl, SLT_VCL_Log, "cookie: cookie string overflowed, abort");
-		return;
-	}
+	VSLb(ctx->vsl, SLT_Debug, "cookie: cookie string is %lu bytes: %s", strlen(cookieheader), cookieheader);
 
 	if (!VTAILQ_EMPTY(&vcp->cookielist)) {
 		/* If called twice during the same request, clean out old state */
 		vmod_clean(ctx);
 	}
 
-	/* strtok modifies source, fewer surprises. */
-	strncpy(tokendata, cookieheader, sizeof(tokendata));
-	dataptr = tokendata;
+	p = cookieheader;
+	while (*p != '\0') {
+		while (isspace(*p)) p++;
+		sep = strchr(p, '=');
+		if (sep == NULL)
+			break;
+		name = strndup(p, pdiff(p, sep));
+		p = sep + 1;
+		sep = strchr(p, ';');
+		if (sep == NULL)
+			sep = strchr(p, '\0');
 
-	while (1) {
-		token = strtok_r(dataptr, ";", &tokstate);
-		dataptr = NULL; /* strtok() wants NULL on subsequent calls. */
-
-		if (token == NULL)
-		    break;
-
-		while (token[0] == ' ')
-		    token++;
-
-		sepindex = strchr(token, '=');
-		if (sepindex == NULL) {
-			/* No delimiter, this cookie is invalid. Next! */
-			continue;
+		if (sep == NULL) {
+			free(name);
+			break;
 		}
-		value = sepindex + 1;
-		*sepindex = '\0';
+		value = strndup(p, pdiff(p, sep));
+		p = sep + 1;
 
-		VSLb(ctx->vsl, SLT_Debug, "value length is %lu.", strlen(value));
-		vmod_set(ctx, token, value);
+		VSLb(ctx->vsl, SLT_Debug, "name(%lu)=%s value(%lu)=\"%s\" ", strlen(name), name, strlen(value), value);
+		vmod_set(ctx, name, value);
+		free(name);
+		free(value);
 		i++;
 	}
 	VSLb(ctx->vsl, SLT_VCL_Log, "cookie: parsed %i cookies.", i);
@@ -254,8 +248,7 @@ vmod_clean(VRT_CTX) {
 
 VCL_VOID
 vmod_filter_except(VRT_CTX, VCL_STRING whitelist_s) {
-	char buf[MAX_COOKIE_STRING];
-	struct cookie *cookieptr;
+	struct cookie *cookieptr, *safeptr;
 	char *tokptr, *saveptr;
 	int whitelisted = 0;
 	struct vmod_cookie *vcp = cobj_get(ctx);
@@ -266,9 +259,15 @@ vmod_filter_except(VRT_CTX, VCL_STRING whitelist_s) {
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
 
 	AN(whitelist_s);
-	strcpy(buf, whitelist_s);
+	char *buf = malloc(strlen(whitelist_s) + 1);
+	AN(buf);
+
+	strncpy(buf, whitelist_s, strlen(whitelist_s));
 	tokptr = strtok_r(buf, ",", &saveptr);
-	if (!tokptr) return;
+	if (!tokptr) {
+		free(buf);
+		return;
+	}
 
 	/* Parse the supplied whitelist. */
 	while (1) {
@@ -300,6 +299,7 @@ vmod_filter_except(VRT_CTX, VCL_STRING whitelist_s) {
 		VTAILQ_REMOVE(&whitelist_head, whentry, list);
 		free(whentry);
 	}
+	free(buf);
 }
 
 
