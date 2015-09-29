@@ -97,7 +97,8 @@ vmod_parse(VRT_CTX, VCL_STRING cookieheader) {
 		return;
 	}
 
-	VSLb(ctx->vsl, SLT_Debug, "cookie: cookie string is %lu bytes: %s", strlen(cookieheader), cookieheader);
+	VSLb(ctx->vsl, SLT_Debug, "cookie: cookie string is %lu bytes: %s",
+	    strlen(cookieheader), cookieheader);
 
 	if (!VTAILQ_EMPTY(&vcp->cookielist)) {
 		/* If called twice during the same request, clean out old state */
@@ -124,7 +125,8 @@ vmod_parse(VRT_CTX, VCL_STRING cookieheader) {
 		if (sep != '\0')
 			p = sep + 1;
 
-		VSLb(ctx->vsl, SLT_Debug, "name(%lu)=%s value(%lu)=\"%s\" ", strlen(name), name, strlen(value), value);
+		VSLb(ctx->vsl, SLT_Debug, "name(%lu)=%s value(%lu)=\"%s\" ",
+		    strlen(name), name, strlen(value), value);
 		vmod_set(ctx, name, value);
 		free(name);
 		free(value);
@@ -158,7 +160,8 @@ vmod_set(VRT_CTX, VCL_STRING name, VCL_STRING value) {
 			p = WS_Printf(ctx->ws, "%s", value);
 			if (p == NULL) {
 				WS_MarkOverflow(ctx->ws); // Remove when WS_Printf() does it.
-				VSLb(ctx->vsl, SLT_VCL_Log, "cookie: Workspace overflow in set()");
+				VSLb(ctx->vsl, SLT_VCL_Log,
+				    "cookie: Workspace overflow in set()");
 			} else
 				cookie->value = p;
 
@@ -166,7 +169,8 @@ vmod_set(VRT_CTX, VCL_STRING name, VCL_STRING value) {
 		}
 	}
 
-	struct cookie *newcookie = (struct cookie *)WS_Alloc(ctx->ws, sizeof(struct cookie));
+	struct cookie *newcookie = (struct cookie *)WS_Alloc(ctx->ws,
+	    sizeof(struct cookie));
 	if (newcookie == NULL) {
 		VSLb(ctx->vsl, SLT_VCL_Log, "cookie: unable to get storage for cookie");
 		return;
