@@ -95,8 +95,8 @@ vmod_parse(VRT_CTX, VCL_STRING cookieheader) {
 		return;
 	}
 
-	VSLb(ctx->vsl, SLT_Debug, "cookie: cookie string is %lu bytes: %s",
-	    strlen(cookieheader), cookieheader);
+	// VSLb(ctx->vsl, SLT_Debug, "cookie: cookie string is %lu bytes: %s",
+	//    strlen(cookieheader), cookieheader);
 
 	if (!VTAILQ_EMPTY(&vcp->cookielist)) {
 		/* If called twice during the same request, clean out old state */
@@ -123,8 +123,8 @@ vmod_parse(VRT_CTX, VCL_STRING cookieheader) {
 		if (sep != '\0')
 			p = sep + 1;
 
-		VSLb(ctx->vsl, SLT_Debug, "name(%lu)=%s value(%lu)=\"%s\" ",
-		    strlen(name), name, strlen(value), value);
+		// VSLb(ctx->vsl, SLT_Debug, "name(%lu)=%s value(%lu)=\"%s\" ",
+		//   strlen(name), name, strlen(value), value);
 		vmod_set(ctx, name, value);
 		free(name);
 		free(value);
@@ -261,12 +261,20 @@ vmod_filter_except(VRT_CTX, VCL_STRING whitelist_s) {
 	/* Parse the supplied whitelist. */
 	while (*p != '\0') {
 		while (*p != '\0' && isspace(*p)) p++;
+		if (p == '\0')
+			break;
 
 		q = strchr(p, ',');
 		if (q == NULL) {
 			q = strchr(p, '\0');
 		}
 		AN(q);
+
+		if (q == p) {
+			p++;
+			continue;
+		}
+
 		assert(q > p);
 		assert(q-p > 0);
 
@@ -274,6 +282,7 @@ vmod_filter_except(VRT_CTX, VCL_STRING whitelist_s) {
 		AN(whentry);
 		whentry->name = strndup(p, q-p);
 		AN(whentry->name);
+		VSLb(ctx->vsl, SLT_Debug, "cookie: p is %s -- name: %s", p, whentry->name);
 
 		VTAILQ_INSERT_TAIL(&whitelist_head, whentry, list);
 
