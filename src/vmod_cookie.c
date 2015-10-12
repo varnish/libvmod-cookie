@@ -257,7 +257,7 @@ vmod_filter_except(VRT_CTX, VCL_STRING whitelist_s) {
 	char *tokptr, *saveptr;
 	int whitelisted = 0;
 	struct vmod_cookie *vcp = cobj_get(ctx);
-	struct whitelist *whentry;
+	struct whitelist *whentry, *whsafe;
 
 	VTAILQ_HEAD(, whitelist) whitelist_head;
 	VTAILQ_INIT(&whitelist_head);
@@ -278,10 +278,11 @@ vmod_filter_except(VRT_CTX, VCL_STRING whitelist_s) {
 	while (1) {
 		whentry = malloc(sizeof(struct whitelist));
 		AN(whentry);
-		strcpy(whentry->name, tokptr);
+		strncpy(whentry->name, tokptr, sizeof(whentry->name));
 		VTAILQ_INSERT_TAIL(&whitelist_head, whentry, list);
 		tokptr = strtok_r(NULL, ",", &saveptr);
-		if (!tokptr) break;
+		if (!tokptr)
+			break;
 	}
 
 	/* Filter existing cookies that isn't in the whitelist. */
@@ -300,7 +301,7 @@ vmod_filter_except(VRT_CTX, VCL_STRING whitelist_s) {
 		}
 	}
 
-	VTAILQ_FOREACH(whentry, &whitelist_head, list) {
+	VTAILQ_FOREACH_SAFE(whentry, &whitelist_head, list, whsafe) {
 		VTAILQ_REMOVE(&whitelist_head, whentry, list);
 		free(whentry);
 	}
