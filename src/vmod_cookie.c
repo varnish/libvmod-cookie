@@ -17,8 +17,6 @@ Author: Lasse Karstensen <lasse@varnish-software.com>, July 2012.
 
 #include "vcc_if.h"
 
-#define MAX_COOKIE_NAME 1024   /* name maxsize */
-
 struct cookie {
 	unsigned magic;
 #define VMOD_COOKIE_ENTRY_MAGIC 0x3BB41543
@@ -28,7 +26,7 @@ struct cookie {
 };
 
 struct whitelist {
-	char name[MAX_COOKIE_NAME];
+	char *name;
 	VTAILQ_ENTRY(whitelist) list;
 };
 
@@ -147,11 +145,6 @@ vmod_set(VRT_CTX, VCL_STRING name, VCL_STRING value) {
 	if (value == NULL || strlen(value) == 0)
 		return;
 
-	if (strlen(name) + 1 >= MAX_COOKIE_NAME) {
-		VSLb(ctx->vsl, SLT_VCL_Log, "cookie: cookie string overflowed");
-		return;
-	}
-
 	char *p;
 	struct cookie *cookie;
 	VTAILQ_FOREACH(cookie, &vcp->cookielist, list) {
@@ -254,35 +247,39 @@ vmod_clean(VRT_CTX) {
 VCL_VOID
 vmod_filter_except(VRT_CTX, VCL_STRING whitelist_s) {
 	struct cookie *cookieptr, *safeptr;
-	char *tokptr, *saveptr;
-	int whitelisted = 0;
 	struct vmod_cookie *vcp = cobj_get(ctx);
 	struct whitelist *whentry, *whsafe;
+	char const *p = whitelist_s;
+	char *q;
+	int whitelisted = 0;
 
 	VTAILQ_HEAD(, whitelist) whitelist_head;
 	VTAILQ_INIT(&whitelist_head);
 	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
-
 	AN(whitelist_s);
-	char *buf = malloc(strlen(whitelist_s) + 1);
-	AN(buf);
-
-	strncpy(buf, whitelist_s, strlen(whitelist_s));
-	tokptr = strtok_r(buf, ",", &saveptr);
-	if (!tokptr) {
-		free(buf);
-		return;
-	}
 
 	/* Parse the supplied whitelist. */
-	while (1) {
+	while (*p != '\0') {
+		while (*p != '\0' && isspace(*p)) p++;
+
+		q = strchr(p, ',');
+		if (q == NULL) {
+			q = strchr(p, '\0');
+		}
+		AN(q);
+		assert(q > p);
+		assert(q-p > 0);
+
 		whentry = malloc(sizeof(struct whitelist));
 		AN(whentry);
-		strncpy(whentry->name, tokptr, sizeof(whentry->name));
+		whentry->name = strndup(p, q-p);
+		AN(whentry->name);
+
 		VTAILQ_INSERT_TAIL(&whitelist_head, whentry, list);
-		tokptr = strtok_r(NULL, ",", &saveptr);
-		if (!tokptr)
-			break;
+
+		p = q;
+		if (*p != '\0')
+			p++;
 	}
 
 	/* Filter existing cookies that isn't in the whitelist. */
@@ -303,9 +300,9 @@ vmod_filter_except(VRT_CTX, VCL_STRING whitelist_s) {
 
 	VTAILQ_FOREACH_SAFE(whentry, &whitelist_head, list, whsafe) {
 		VTAILQ_REMOVE(&whitelist_head, whentry, list);
+		free(whentry->name);
 		free(whentry);
 	}
-	free(buf);
 }
 
 
