@@ -19,6 +19,8 @@ if test "x$ac_cv_prog_cc_c99" = xno; then
 fi
 AC_PROG_CPP
 
+LT_INIT([disable-static])
+
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 AC_PROG_MAKE_SET
