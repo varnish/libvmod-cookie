@@ -302,6 +302,52 @@ vmod_get_string(VRT_CTX, struct vmod_priv *priv) {
 	return (u);
 }
 
+static int
+cmp_cookie_names(const void *a, const void *b) {
+	const struct cookie *pa = *((struct cookie**)a);
+	const struct cookie *pb = *((struct cookie**)b);
+	return strcmp(pa->name, pb->name);
+}
+
+VCL_VOID
+vmod_sort(VRT_CTX, struct vmod_priv *priv) {
+	struct vmod_cookie *vcp;
+	struct cookie *curr;
+	struct cookie **pp, **pe;
+	int np, i;
+
+	CHECK_OBJ_NOTNULL(ctx, VRT_CTX_MAGIC);
+
+	vcp = cobj_get(priv);
+	CHECK_OBJ_NOTNULL(vcp, VMOD_COOKIE_MAGIC);
+
+	(void)WS_Reserve(ctx->ws, 0);
+	/* We trust cache_ws.c to align sensibly */
+	pp = (struct cookie**)(void*)(ctx->ws->f);
+	pe = (struct cookie**)(void*)(ctx->ws->e);
+
+	/* Dump the cookie list into the workspace */
+	np = 0;
+	VTAILQ_FOREACH(curr, &vcp->cookielist, list) {
+		if (pp + (sizeof(struct cookie*)) >= pe) {
+			WS_Release(ctx->ws, 0);
+			WS_MarkOverflow(ctx->ws);
+			return;
+		}
+		pp[np] = curr;
+		++np;
+	}
+
+	qsort(pp, np, sizeof(struct cookie*), cmp_cookie_names);
+
+	/* Clear out cookies and reinsert them in sort order */
+	VTAILQ_INIT(&vcp->cookielist);
+	for(i=0; i<np; ++i) {
+		VTAILQ_INSERT_TAIL(&vcp->cookielist, pp[i], list);
+	}
+
+	WS_Release(ctx->ws, 0);
+}
 
 VCL_STRING
 vmod_format_rfc1123(VRT_CTX, VCL_TIME ts, VCL_DURATION duration) {

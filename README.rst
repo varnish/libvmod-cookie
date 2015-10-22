@@ -210,6 +210,37 @@ Example
 			set req.http.cookie = cookie.get_string();
 		}
 
+
+
+sort
+----
+
+Prototype
+        ::
+
+                sort()
+Return value
+	VOID
+Description
+	Sort the internal cookie list by name.
+
+	Useful for when you want to add the full Cookie header to the cache key.
+Example
+        ::
+
+		sub vcl_recv {
+			cookie.parse(req.http.cookie);
+			cookie.filter_except("cookie1,cookie2");
+			cookie.sort();
+			set req.http.cookie = cookie.get_string();
+		}
+
+		sub vcl_hash {
+			# ...
+			hash_data(req.http.cookie);
+			# ...
+		}
+
 format_rfc1123
 --------------
 

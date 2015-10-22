@@ -1,0 +1,41 @@
+varnishtest "Test cookie sorting"
+
+server s1 -repeat 5 {
+       rxreq
+       txresp
+} -start
+
+varnish v1 -vcl+backend {
+	import cookie from "${vmod_topbuild}/src/.libs/libvmod_cookie.so";
+	sub vcl_deliver {
+		cookie.parse(req.http.cookie);
+		cookie.sort();
+		set resp.http.X-foo = cookie.get_string();
+	}
+
+} -start
+
+client c1 {
+	txreq -hdr "Cookie: c=1; aa=2; a=3; d=4;"
+	rxresp
+	expect resp.http.X-foo == "a=3; aa=2; c=1; d=4;"
+} -run
+
+client c2 {
+	txreq -hdr "Cookie: "
+	rxresp
+	expect resp.http.X-foo == ""
+} -run
+
+client c3 {
+	txreq
+	rxresp
+	expect resp.http.X-foo == ""
+} -run
+
+# A single cookie should also work.
+client c4 {
+	txreq -hdr "Cookie: cookie1=foobarbaz"
+	rxresp
+	expect resp.http.X-foo == "cookie1=foobarbaz;"
+} -run
