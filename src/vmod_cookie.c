@@ -6,11 +6,18 @@ Simplifies handling of the Cookie request header.
 Author: Lasse Karstensen <lasse@varnish-software.com>, July 2012.
 */
 
+#include "config.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
+#ifndef HAVE_VSB_TRIM
+#include <ctype.h>
+#endif
+
+#include "vcl.h"
 #include "vrt.h"
 #include "vqueue.h"
 #include "cache/cache.h"
@@ -44,13 +51,33 @@ struct vmod_cookie {
 static pthread_key_t key;
 static pthread_once_t key_is_initialized = PTHREAD_ONCE_INIT;
 
+#ifndef HAVE_VSB_TRIM
+int
+VSB_trim(struct vsb *s)
+{
+	if (s->s_error != 0)
+		return (-1);
+
+	while (s->s_len > 0 && isspace(s->s_buf[s->s_len-1]))
+		--s->s_len;
+
+	return (0);
+}
+#endif
+
 static void
 mkkey(void) {
 	AZ(pthread_key_create(&key, free));
 }
 
 int
-init_function(struct vmod_priv *priv, const struct VCL_conf *conf) {
+event_function(VRT_CTX, struct vmod_priv *priv, enum vcl_event_e e)
+{
+	(void)ctx;
+	(void)priv;
+
+	if (e != VCL_EVENT_LOAD)
+		return (0);
 	pthread_once(&key_is_initialized, mkkey);
 	return (0);
 }
