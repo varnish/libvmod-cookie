@@ -24,11 +24,15 @@ AC_PROG_LIBTOOL
 AC_PROG_MAKE_SET
 
 # Check for rst utilities
-AC_CHECK_PROGS(RST2MAN, [rst2man rst2man.py], "no")
-if test "x$RST2MAN" = "xno"; then
-	AC_MSG_WARN([rst2man not found - not building man pages])
-fi
-AM_CONDITIONAL(HAVE_RST2MAN, [test "x$RST2MAN" != "xno"])
+AC_ARG_WITH([rst2man],
+               AS_HELP_STRING([--with-rst2man=PATH],
+                              [Location of rst2man (auto)]),
+               [RST2MAN="$withval"],
+               [AC_CHECK_PROGS(RST2MAN, [rst2man rst2man.py], "no")
+	        if test "x$RST2MAN" = "xno"; then
+		   AC_MSG_WARN([rst2man not found - not building man pages])
+		fi])
+AM_CONDITIONAL(HAVE_RST2MAN,[test "x$RST2MAN" != "xno"])
 
 # Checks for header files.
 AC_HEADER_STDC
